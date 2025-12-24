@@ -44,7 +44,7 @@ export const initI18n = async (): Promise<typeof i18n> => {
   // lazy-load other languages when needed
   i18n.on('languageChanged', async (lng: Language) => {
     if (!i18n.hasResourceBundle(lng, 'translation')) {
-      const data = await loadLocales(lng);
+      const data: Record<string, string> = await loadLocales(lng);
       i18n.addResourceBundle(lng, 'translation', data, true, true);
     }
   });

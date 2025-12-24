@@ -243,13 +243,15 @@ const CreateCompetition = ({
             )}
 
             <Stack direction='column' gap={0.7}>
-              <Typography
-                fontSize={14}
-                fontWeight={500}
-                sx={{ color: '#171A1C' }}
-              >
-                {t('competitionLogo')}
-              </Typography>
+              {!isLogoUploadOnly && (
+                <Typography
+                  fontSize={14}
+                  fontWeight={500}
+                  sx={{ color: '#171A1C' }}
+                >
+                  {t('competitionLogo')}
+                </Typography>
+              )}
               <Stack direction='row' gap={1}>
                 <Input
                   id='competition-image'

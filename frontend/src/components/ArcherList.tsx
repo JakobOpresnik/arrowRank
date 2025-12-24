@@ -338,7 +338,7 @@ const ArcherList = ({
                       style={{ width: 26, height: 26, cursor: 'pointer' }}
                     />
                   </MenuButton>
-                  <Menu sx={{ width: 120 }}>
+                  <Menu>
                     <Stack direction='column' spacing={1}>
                       <MenuItem onClick={() => setEditingRow(archer.id)}>
                         <Stack
@@ -354,7 +354,11 @@ const ArcherList = ({
                             }}
                             color='primary'
                           />
-                          <Typography level='body-md' color='primary'>
+                          <Typography
+                            level='body-md'
+                            color='primary'
+                            paddingInlineEnd={1}
+                          >
                             {translations.tableEditButton}
                           </Typography>
                         </Stack>
@@ -374,7 +378,11 @@ const ArcherList = ({
                               color: '#F54242',
                             }}
                           />
-                          <Typography level='body-md' sx={{ color: '#F54242' }}>
+                          <Typography
+                            level='body-md'
+                            paddingInlineEnd={1}
+                            sx={{ color: '#F54242' }}
+                          >
                             {translations.tableDeleteButton}
                           </Typography>
                         </Stack>
@@ -476,23 +484,23 @@ const ArcherList = ({
             </Typography>
           </LinearProgress>
         </Tooltip>
-
-        <Stack
-          direction='row'
-          alignItems='center'
-          gap={2}
-          px={2}
-          borderRadius={8}
-          bgcolor={progress >= 100 ? '#5CD45B' : '#C7DFF7'}
+        <Tooltip
+          title={translations.progressBarAbsNumberTooltip}
+          placement='bottom'
+          variant='solid'
+          arrow
+          sx={{ marginBottom: 5 }}
         >
-          <PeopleAltIcon sx={{ color: '#000' }} />
-          <Tooltip
-            title={translations.progressBarAbsNumberTooltip}
-            placement='bottom'
-            variant='solid'
-            arrow
-            sx={{ marginBottom: 5 }}
+          <Stack
+            direction='row'
+            alignItems='center'
+            gap={2}
+            px={2}
+            borderRadius={8}
+            bgcolor={progress >= 100 ? '#5CD45B' : '#C7DFF7'}
           >
+            <PeopleAltIcon sx={{ color: '#000' }} />
+
             <Typography
               alignContent='center'
               // px={2}
@@ -502,8 +510,8 @@ const ArcherList = ({
             >
               {archersWithScores.length} / {allArchers?.length}
             </Typography>
-          </Tooltip>
-        </Stack>
+          </Stack>
+        </Tooltip>
       </Stack>
 
       <Table

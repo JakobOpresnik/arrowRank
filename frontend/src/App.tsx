@@ -27,7 +27,7 @@ import { exportTableToExcel } from './utils/excel_export';
 import { useFilterStore } from './stores/useFilterStore';
 import { useCompetitionStore } from './stores/useCompetitionStore';
 import ConfirmClearScores from './components/modals/ConfirmClearScores';
-// import PtlLogo from './assets/ptl_logo.svg';
+import PtlLogo from './assets/ptl_logo.png';
 import { useTranslation } from 'react-i18next';
 import SelectLanguage from './components/SelectLanguage';
 import { useLanguageStore } from './stores/useLanguageStore';
@@ -194,7 +194,7 @@ function App() {
       >
         <Box
           component='img'
-          // src={PtlLogo}
+          src={PtlLogo}
           alt={t('ptlLogoAltText')}
           sx={{ height: 150, width: 'auto' }}
         />
@@ -295,6 +295,7 @@ function App() {
                   title={t('clearFiltersTooltip')}
                   placement='top'
                   sx={{ paddingInline: 1.5, paddingBlock: 1 }}
+                  arrow
                 >
                   <Button
                     sx={{
@@ -313,6 +314,7 @@ function App() {
                     title={t('clearScoresTooltip')}
                     placement='top'
                     sx={{ paddingInline: 1.5, paddingBlock: 1 }}
+                    arrow
                   >
                     <Button
                       sx={{
