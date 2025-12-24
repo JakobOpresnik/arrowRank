@@ -1,0 +1,14 @@
+node_modules
+
+# Python cache
+/backend/__pycache__/
+
+# Python virtual environment
+/backend/ar-venv/
+
+# ignore all environment files
+*.env
+
+# SQLite database files
+*.db
+/backend/*.db

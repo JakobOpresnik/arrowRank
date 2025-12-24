@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ESNext", // modern JS output
+    "useDefineForClassFields": true, // recommended for Vite
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "allowJs": false,
+    "skipLibCheck": true, // skip type checks of dependencies for speed
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true, // enable all strict type-checking options
+    "forceConsistentCasingInFileNames": true,
+    "allowImportingTsExtensions": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true, // Vite handles compilation, TS only type checks
+    "jsx": "react-jsx", // React 17+ JSX transform
+    "types": ["vite/client", "node"], // include Vite & Node types
+    "baseUrl": "./src", // allow absolute imports from src
+    "paths": {
+      "@/*": ["*"] // alias '@' to 'src'
+    }
+  },
+  "include": ["src", "vite-env.d.ts"],
+  "exclude": ["node_modules", "dist"]
+}
