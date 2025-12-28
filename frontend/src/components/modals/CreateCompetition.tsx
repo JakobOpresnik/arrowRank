@@ -19,13 +19,13 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
 import type { PickerValue } from '@mui/x-date-pickers/internals';
 import { useTranslation } from 'react-i18next';
-import 'dayjs/locale/sl'; // Slovene locale
 import { BE_BASE_URL } from '../../constants';
 import { useAddCompetition } from '../../hooks/useAddCompetition';
 import { useUploadCompetitionLogo } from '../../hooks/useUploadCompetitionLogo';
 import { useFilterStore, FilterStore } from '../../stores/useFilterStore';
 import { CreateCompetitionProps, Competition } from '../../types';
 import { ModalWrapper } from './ModalWrapper';
+import 'dayjs/locale/sl'; // Slovene locale
 
 const CreateCompetition = ({
   open,
