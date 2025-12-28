@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { SUPPORTED_LANGUAGES } from './constants';
+import { SxProps } from '@mui/joy/styles/types';
 
 export interface Archer {
   id: number;
@@ -154,3 +155,15 @@ export interface ArcherExtended extends Archer {
 }
 
 export type ExcelRow = (string | number)[];
+
+export interface ModalWrapperProps {
+  open: boolean;
+  onClose: () => void;
+  title?: ReactNode;
+  children: ReactNode;
+  actions?: ReactNode;
+  maxWidth?: number;
+  sx?: SxProps;
+}
+
+export type OnCloseReason = 'backdropClick' | 'escapeKeyDown' | 'closeClick';

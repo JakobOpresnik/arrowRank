@@ -1,15 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { DeleteArcherProps } from '../../types';
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Modal,
-  ModalClose,
-  ModalDialog,
-  Typography,
-} from '@mui/joy';
+import { Button, Typography } from '@mui/joy';
+import { ModalWrapper } from './ModalWrapper';
 
 const DeleteArcher = ({
   open,
@@ -25,19 +17,12 @@ const DeleteArcher = ({
   };
 
   return (
-    <Modal open={open} onClose={onClose}>
-      <ModalDialog maxWidth={410}>
-        <ModalClose variant='soft' />
-        <DialogTitle>
-          <Typography paddingBottom={2}>
-            {t('deleteArcherDialogTitle')}
-          </Typography>
-        </DialogTitle>
-        <DialogContent>
-          <Typography>{t('deleteArcherDialogContent1')}</Typography>
-          <Typography>{t('deleteArcherDialogContent2')}</Typography>
-        </DialogContent>
-        <DialogActions>
+    <ModalWrapper
+      open={open}
+      onClose={onClose}
+      title={t('deleteArcherDialogTitle')}
+      actions={
+        <>
           <Button variant='outlined' sx={{ border: 2 }} onClick={onClose}>
             {t('cancelButton')}
           </Button>
@@ -49,9 +34,12 @@ const DeleteArcher = ({
           >
             {t('tableDeleteButton')}
           </Button>
-        </DialogActions>
-      </ModalDialog>
-    </Modal>
+        </>
+      }
+    >
+      <Typography>{t('deleteArcherDialogContent1')}</Typography>
+      <Typography>{t('deleteArcherDialogContent2')}</Typography>
+    </ModalWrapper>
   );
 };
 

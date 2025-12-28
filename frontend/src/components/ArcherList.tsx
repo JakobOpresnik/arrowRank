@@ -44,6 +44,7 @@ import SelectAgeGroup from './SelectAgeGroup';
 import SelectCategory from './SelectCategory';
 import SelectClub from './SelectClub';
 import SelectGender from './SelectGender';
+import { capitalize, removeSpaces } from '@/utils/text_utils';
 
 export const SORTING = 'desc';
 const NUM_OF_FIXED_COLS = 7;
@@ -149,6 +150,22 @@ const ArcherList = ({
     }),
     [t]
   );
+
+  const getTranslation = (
+    column: 'age' | 'gender' | 'category',
+    value: string
+  ): string => {
+    const capitalizedValue: string = capitalize(value);
+    const formattedValue: string = removeSpaces(capitalizedValue);
+    switch (column) {
+      case 'age':
+        return t(`tableAgeGroup${formattedValue}`);
+      case 'gender':
+        return t(`tableGender${formattedValue}`);
+      case 'category':
+        return t(`tableCategory${formattedValue}`);
+    }
+  };
 
   // get all unique clubs from all archers
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -311,88 +328,93 @@ const ArcherList = ({
     return (
       <tbody>
         {sortedArchers.length > 0 ? (
-          rankedArchers.map((archer: ArcherExtended) => (
-            <tr
-              key={archer.id}
-              className={archer.total < 0 ? 'zero-score' : ''}
-            >
-              <td>{archer.rank}</td>
-              <td>{archer.first_name}</td>
-              <td>{archer.last_name}</td>
-              <td>{archer.club}</td>
-              <td>{archer.age_group}</td>
-              <td>{archer.gender}</td>
-              <td>{archer.category}</td>
-              <td colSpan={2}>{archer.total >= 0 ? archer.total : ''}</td>
-              {scoreKeys.map((points) => (
-                <td key={points}>
-                  {(archer[`score${points}` as keyof ArcherScores] ?? 0) > 0
-                    ? archer[`score${points}` as keyof ArcherScores]
-                    : ''}
+          rankedArchers.map((archer: ArcherExtended) => {
+            const ageGroup = getTranslation('age', archer.age_group);
+            const gender = getTranslation('gender', archer.gender);
+            const category = getTranslation('category', archer.category);
+            return (
+              <tr
+                key={archer.id}
+                className={archer.total < 0 ? 'zero-score' : ''}
+              >
+                <td>{archer.rank}</td>
+                <td>{archer.first_name}</td>
+                <td>{archer.last_name}</td>
+                <td>{archer.club}</td>
+                <td>{ageGroup}</td>
+                <td>{gender}</td>
+                <td>{category}</td>
+                <td colSpan={2}>{archer.total >= 0 ? archer.total : ''}</td>
+                {scoreKeys.map((points) => (
+                  <td key={points}>
+                    {(archer[`score${points}` as keyof ArcherScores] ?? 0) > 0
+                      ? archer[`score${points}` as keyof ArcherScores]
+                      : ''}
+                  </td>
+                ))}
+                <td>
+                  <Dropdown>
+                    <MenuButton variant='plain' color='neutral'>
+                      <MoreHorizIcon
+                        style={{ width: 26, height: 26, cursor: 'pointer' }}
+                      />
+                    </MenuButton>
+                    <Menu>
+                      <Stack direction='column' spacing={1}>
+                        <MenuItem onClick={() => setEditingRow(archer.id)}>
+                          <Stack
+                            direction='row'
+                            alignItems='center'
+                            spacing={1.5}
+                          >
+                            <EditIcon
+                              style={{
+                                width: 24,
+                                height: 24,
+                                cursor: 'pointer',
+                              }}
+                              color='primary'
+                            />
+                            <Typography
+                              level='body-md'
+                              color='primary'
+                              paddingInlineEnd={1}
+                            >
+                              {translations.tableEditButton}
+                            </Typography>
+                          </Stack>
+                        </MenuItem>
+                        <Divider />
+                        <MenuItem onClick={() => setDeletingRow(archer.id)}>
+                          <Stack
+                            direction='row'
+                            alignItems='center'
+                            spacing={1.5}
+                          >
+                            <DeleteIcon
+                              style={{
+                                width: 24,
+                                height: 24,
+                                cursor: 'pointer',
+                                color: '#F54242',
+                              }}
+                            />
+                            <Typography
+                              level='body-md'
+                              paddingInlineEnd={1}
+                              sx={{ color: '#F54242' }}
+                            >
+                              {translations.tableDeleteButton}
+                            </Typography>
+                          </Stack>
+                        </MenuItem>
+                      </Stack>
+                    </Menu>
+                  </Dropdown>
                 </td>
-              ))}
-              <td>
-                <Dropdown>
-                  <MenuButton variant='plain' color='neutral'>
-                    <MoreHorizIcon
-                      style={{ width: 26, height: 26, cursor: 'pointer' }}
-                    />
-                  </MenuButton>
-                  <Menu>
-                    <Stack direction='column' spacing={1}>
-                      <MenuItem onClick={() => setEditingRow(archer.id)}>
-                        <Stack
-                          direction='row'
-                          alignItems='center'
-                          spacing={1.5}
-                        >
-                          <EditIcon
-                            style={{
-                              width: 24,
-                              height: 24,
-                              cursor: 'pointer',
-                            }}
-                            color='primary'
-                          />
-                          <Typography
-                            level='body-md'
-                            color='primary'
-                            paddingInlineEnd={1}
-                          >
-                            {translations.tableEditButton}
-                          </Typography>
-                        </Stack>
-                      </MenuItem>
-                      <Divider />
-                      <MenuItem onClick={() => setDeletingRow(archer.id)}>
-                        <Stack
-                          direction='row'
-                          alignItems='center'
-                          spacing={1.5}
-                        >
-                          <DeleteIcon
-                            style={{
-                              width: 24,
-                              height: 24,
-                              cursor: 'pointer',
-                              color: '#F54242',
-                            }}
-                          />
-                          <Typography
-                            level='body-md'
-                            paddingInlineEnd={1}
-                            sx={{ color: '#F54242' }}
-                          >
-                            {translations.tableDeleteButton}
-                          </Typography>
-                        </Stack>
-                      </MenuItem>
-                    </Stack>
-                  </Menu>
-                </Dropdown>
-              </td>
-            </tr>
-          ))
+              </tr>
+            );
+          })
         ) : (
           <tr>
             <td colSpan={numTableColumns + 1}>
