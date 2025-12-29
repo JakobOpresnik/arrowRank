@@ -37,6 +37,7 @@ import {
   ArcherExtended,
   ArcherListProps,
   DeletionAction,
+  FilterableColumn,
 } from '../types';
 import MissingDataWrapper from './MissingDataWrapper';
 import DeleteArcher from './modals/DeleteArcher';
@@ -154,10 +155,7 @@ const ArcherList = ({
     [t]
   );
 
-  const getTranslation = (
-    column: 'age' | 'gender' | 'category',
-    value: string
-  ): string => {
+  const getTranslation = (column: FilterableColumn, value: string): string => {
     const capitalizedValue: string = capitalize(value);
     const formattedValue: string = removeSpaces(capitalizedValue);
     switch (column) {

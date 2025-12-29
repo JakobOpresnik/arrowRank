@@ -169,3 +169,5 @@ export interface ModalWrapperProps {
 export type OnCloseReason = 'backdropClick' | 'escapeKeyDown' | 'closeClick';
 
 export type DeletionAction = 'clear-score' | 'delete-archer';
+
+export type FilterableColumn = 'age' | 'gender' | 'category';
