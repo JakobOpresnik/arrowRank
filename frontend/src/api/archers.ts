@@ -110,6 +110,22 @@ export const updateArcherScore = async (
   }
 };
 
+export const clearArcherScore = async (archerId: number): Promise<void> => {
+  const res: Response = await fetch(
+    `${BE_BASE_URL}/archers/clear_score/${archerId}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.message || 'Failed to clear score');
+  }
+};
+
 export const clearArcherScores = async (
   competitionId: number
 ): Promise<void> => {

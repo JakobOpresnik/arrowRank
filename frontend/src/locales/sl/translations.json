@@ -101,8 +101,12 @@
   "cancelButton": "Prekliči",
   "clearButton": "Počisti",
   "deleteArcherDialogTitle": "Izbriši lokostrelca",
+  "chooseDeletionOption": "Izberi eno izmed spodnjih možnosti:",
+  "deleteArcherOption": "Izbriši lokostrelca",
+  "deleteScoreOption": "Izbriši zgolj rezultat",
   "deleteArcherDialogContent1": "Ali si prepričan, da želiš izbrisati tega lokostrelca?",
-  "deleteArcherDialogContent2": "To dejanje je nepovratno.",
+  "deleteArcherDialogContent2": "Ali si prepričan, da želiš izbrisati rezultat tega lokostrelca?",
+  "deleteArcherDialogContent3": "To dejanje je nepovratno.",
   "noArchersFoundForFilters": "Ni najdenih lokostrelcev, ki bi ustrezali izbranim filtrom.",
   "loadingTranslations": "Nalaganje prevodov..."
 }

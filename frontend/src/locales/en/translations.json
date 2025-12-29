@@ -101,8 +101,12 @@
   "cancelButton": "Cancel",
   "clearButton": "Clear",
   "deleteArcherDialogTitle": "Delete archer",
+  "chooseDeletionOption": "Choose one of the options below:",
+  "deleteArcherOption": "Delete archer",
+  "deleteScoreOption": "Delete archer's score only",
   "deleteArcherDialogContent1": "Are you sure you want to delete this archer?",
-  "deleteArcherDialogContent2": "This action cannot be undone.",
+  "deleteArcherDialogContent2": "Are you sure you want to delete this archer's score?",
+  "deleteArcherDialogContent3": "This action cannot be undone.",
   "noArchersFoundForFilters": "No archers found for the selected filters.",
   "loadingTranslations": "Loading translations..."
 }

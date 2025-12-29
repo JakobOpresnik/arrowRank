@@ -36,6 +36,7 @@ import {
   ArcherScores,
   ArcherExtended,
   ArcherListProps,
+  DeletionAction,
 } from '../types';
 import MissingDataWrapper from './MissingDataWrapper';
 import DeleteArcher from './modals/DeleteArcher';
@@ -45,6 +46,7 @@ import SelectCategory from './SelectCategory';
 import SelectClub from './SelectClub';
 import SelectGender from './SelectGender';
 import { capitalize, removeSpaces } from '@/utils/text_utils';
+import { useArcherClearScore } from '@/hooks/useArcherClearScore';
 
 export const SORTING = 'desc';
 const NUM_OF_FIXED_COLS = 7;
@@ -120,6 +122,7 @@ const ArcherList = ({
   const { mutate: updateScore } = useArchersUpdateScore(
     selectedCompetition ?? 0
   );
+  const { mutate: clearArcherScore } = useArcherClearScore();
   const { mutate: deleteArcher } = useDeleteArcher();
   const {
     setClubFilter,
@@ -573,7 +576,13 @@ const ArcherList = ({
       <DeleteArcher
         open={!!deletingRow}
         archerId={deletingRow!}
-        onDelete={deleteArcher}
+        onDelete={(archerId: number, action: DeletionAction) => {
+          if (action === 'clear-score') {
+            clearArcherScore({ archerId });
+          } else {
+            deleteArcher({ archerId });
+          }
+        }}
         onClose={() => setDeletingRow(null)}
       />
     </MissingDataWrapper>

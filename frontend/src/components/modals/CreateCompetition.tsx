@@ -42,7 +42,7 @@ const CreateCompetition = ({
   const [location, setLocation] = useState<string>('');
 
   const [logo, setLogo] = useState<string | null>(
-    selectedCompetition?.logo_url
+    selectedCompetition?.logo_url && isLogoUploadOnly
       ? `${BE_BASE_URL}${selectedCompetition?.logo_url}`
       : null
   );
@@ -92,6 +92,14 @@ const CreateCompetition = ({
     clearFilters();
   };
 
+  const clearFormFields = (): void => {
+    setName('');
+    setDate('');
+    setLocation('');
+    setLogo(null);
+    setIsSubmitting(false);
+  };
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
     setIsSubmitting(true);
@@ -118,6 +126,8 @@ const CreateCompetition = ({
         }
       );
     }
+
+    clearFormFields();
     onClose();
   };
 
@@ -132,7 +142,7 @@ const CreateCompetition = ({
   const doesLogoExist: boolean = !!logo || !!selectedCompetition?.logo_url;
 
   const submitButtonText: string = (
-    selectedCompetition ? t('change') : t('submit')
+    isLogoUploadOnly ? t('change') : t('submit')
   ).toUpperCase();
 
   return (
@@ -178,7 +188,7 @@ const CreateCompetition = ({
                   level='body-xs'
                   paddingLeft={1}
                   sx={{
-                    background: '#E64040',
+                    color: '#E64040',
                   }}
                 >
                   {isSubmitting && name.length < 5 && t('competitionNameError')}
@@ -232,7 +242,7 @@ const CreateCompetition = ({
                   level='body-xs'
                   paddingLeft={1}
                   sx={{
-                    background: '#E64040',
+                    color: '#E64040',
                   }}
                 >
                   {isSubmitting &&

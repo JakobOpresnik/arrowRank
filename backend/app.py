@@ -179,6 +179,32 @@ def delete_archer(
     return archer
 
 
+@app.post("/archers/clear_score/{archer_id}", response_model=ArcherOut)
+def clear_archer_score(
+    archer_id: int,
+    db: Session = Depends(get_db)
+) -> ArcherOut:
+    archer: Optional[Archer] = db.query(Archer).filter(Archer.id == archer_id).first()
+
+    if not archer:
+        raise HTTPException(status_code=404, detail="Archer not found")
+    
+    archer.score20 = None # type: ignore
+    archer.score18 = None # type: ignore
+    archer.score16 = None # type: ignore
+    archer.score14 = None # type: ignore
+    archer.score12 = None # type: ignore
+    archer.score10 = None # type: ignore
+    archer.score8 = None # type: ignore
+    archer.score6 = None # type: ignore
+    archer.score4 = None # type: ignore
+    archer.score0 = None # type: ignore
+
+    db.commit()
+    db.refresh(archer)
+    return archer
+
+
 @app.post("/archers/clear_scores/{competition_id}")
 def clear_all_archer_scores(
     competition_id: str,

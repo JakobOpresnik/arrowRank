@@ -101,8 +101,12 @@
   "cancelButton": "Annulla",
   "clearButton": "Cancella",
   "deleteArcherDialogTitle": "Elimina arciere",
+  "chooseDeletionOption": "Scegli una delle opzioni qui sotto:",
+  "deleteArcherOption": "Elimina arciere",
+  "deleteScoreOption": "Elimina solo il punteggio dell'arciere",
   "deleteArcherDialogContent1": "Sei sicuro di voler eliminare questo arciere?",
-  "deleteArcherDialogContent2": "Questa azione non può essere annullata.",
+  "deleteArcherDialogContent2": "Sei sicuro di voler eliminare il punteggio di questo arciere?",
+  "deleteArcherDialogContent3": "Questa azione non può essere annullata.",
   "noArchersFoundForFilters": "Nessun arciere trovato per i filtri selezionati.",
   "loadingTranslations": "Caricamento traduzioni..."
 }

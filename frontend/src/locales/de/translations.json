@@ -101,8 +101,12 @@
   "cancelButton": "Stornieren",
   "clearButton": "Löschen",
   "deleteArcherDialogTitle": "Bogenschützen löschen",
+  "chooseDeletionOption": "Wählen Sie eine der folgenden Optionen aus:",
+  "deleteArcherOption": "Bogenschützen löschen",
+  "deleteScoreOption": "Nur Ergebnis löschen",
   "deleteArcherDialogContent1": "Sind Sie sicher, dass Sie diesen Bogenschützen löschen möchten?",
-  "deleteArcherDialogContent2": "Diese Aktion kann nicht rückgängig gemacht werden.",
+  "deleteArcherDialogContent2": "Sind Sie sicher, dass Sie das Ergebnis dieses Bogenschützen löschen möchten?",
+  "deleteArcherDialogContent3": "Diese Aktion kann nicht rückgängig gemacht werden.",
   "noArchersFoundForFilters": "Keine Bogenschützen für die ausgewählten Filter gefunden.",
   "loadingTranslations": "Übersetzungen werden geladen..."
 }

@@ -1,0 +1,10 @@
+individualni izbris rezultata							[X]
+scroll za modalno okno								[X]
+change/add pri uploadu logota							[X]
+posloveniti tabelo (spol, starostna skupina, kategorija)			[X]
+
+prilagoditi dolžine določenih zapisov pri določenih jezikih
+ob zaključku tekmovanja popup
+pri skupnem izvozu grupiraj po predpisanih kategorijah (preverim katere so)
+
+edit score modalno okno reset vrednosti ob zaprtju (?)
