@@ -18,3 +18,5 @@ node_modules
 
 /electron/build/
 /electron/dist/
+
+.venv

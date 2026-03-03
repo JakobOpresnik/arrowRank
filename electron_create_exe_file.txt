@@ -13,9 +13,10 @@ STEP 2:
 build and run your FE and BE to test if they function properly
 
 > cd /frontend
-> pnpm run build && pnpm preview
+> pnpm build && pnpm preview
 
 > cd /backend
+> pip install -r requirements-dev.txt
 > pyinstaller --onefile <main-file>.py --name backend
 
 this creates:
@@ -36,7 +37,7 @@ build electron
 
 > cd /electron
 > rm -rf dist
-> pnpm run build
+> pnpm build
 
 this creates:
 - /electron/dist/*.exe

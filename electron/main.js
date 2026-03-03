@@ -33,8 +33,8 @@ function createWindow() {
     width: 1920,
     height: 1080,
     icon: path.join(__dirname, 'desktop_icon.ico'),
-    autoHideMenuBar: true, // hides menu bar
-    frame: false, // removes title bar
+    autoHideMenuBar: false, // hides menu bar
+    frame: true, // removes title bar
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
