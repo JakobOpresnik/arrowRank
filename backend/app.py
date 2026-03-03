@@ -3,13 +3,14 @@ import os
 import uvicorn
 
 from fastapi import FastAPI, HTTPException, Depends, Query, UploadFile, File, Form
+from fastapi.responses import FileResponse
 from sqlalchemy import desc, asc, func
 from sqlalchemy.orm import Session
 from typing import Optional, List, Dict
 
 from models import AgeGroup, Category, Gender, Base, Archer, Competition
 from schemas import ArcherCreate, ArcherOut, ArcherScoreUpdate, CompetitionOut
-from constants import DATABASE_URL
+from constants import DATABASE_URL, UPLOAD_DIR
 from database import SessionLocal, engine
 from middleware import setup_cors
 from storage import save_uploaded_file, setup_storage
@@ -26,6 +27,25 @@ setup_cors(app)
 
 # file upload directory & static hosting
 setup_storage(app)
+
+
+@app.get("/logos/{filename}")
+def get_logo(filename: str):
+    file_path = os.path.join(UPLOAD_DIR, filename)
+    if not os.path.isfile(file_path):
+        raise HTTPException(status_code=404, detail="Logo not found")
+    return FileResponse(file_path, headers={"Access-Control-Allow-Origin": "*"})
+
+
+@app.get("/logos/{filename}/base64")
+def get_logo_base64(filename: str):
+    import base64 as b64mod
+    file_path = os.path.join(UPLOAD_DIR, filename)
+    if not os.path.isfile(file_path):
+        raise HTTPException(status_code=404, detail="Logo not found")
+    with open(file_path, "rb") as f:
+        content = f.read()
+    return {"data": b64mod.b64encode(content).decode()}
 
 
 def get_db():

@@ -37,6 +37,7 @@ export interface Competition {
   name: string;
   date: string; // ISO format date string
   location: string;
+  organizer?: string | null; // organizing club name, e.g. "Šentlok"
   logo_url?: string | null; // URL to the saved logo image
   logoFile?: File | null; // optional logo file when uploading
 }
