@@ -1,9 +1,6 @@
-from translations import AGE_GROUP_TRANSLATIONS, CATEGORY_TRANSLATIONS, GENDER_TRANSLATIONS
-from models import Gender, Category, AgeGroup, Language
+from models import Gender, Category, AgeGroup
 
-def parse_category(category_value: str, language: Language):
-    print("language: ", language.value)
-
+def parse_category(category_value: str):
     # convert to lower-case
     category_value = category_value.lower().strip()
 
@@ -38,25 +35,5 @@ def parse_category(category_value: str, language: Language):
         gender = Gender.MIXED
     if "u15" in category_value:
         age_group = AgeGroup.U15
-
-    # map category
-    # for key, enum_val in CATEGORY_TRANSLATIONS[language].items():
-    #     if key in category_value:
-    #         category = enum_val
-    #         break
-
-    # # map gender
-    # for key, enum_val in GENDER_TRANSLATIONS[language].items():
-    #     if key in category_value:
-    #         gender = enum_val
-    #         break
-
-    # # map age group
-    # for key, enum_val in AGE_GROUP_TRANSLATIONS[language].items():
-    #     if key in category_value:
-    #         age_group = enum_val
-    #         break
-
-    # print(f"Parsed category: {category}, gender: {gender}, age_group: {age_group} from value: '{category_value}'")
-
+    
     return category, gender, age_group

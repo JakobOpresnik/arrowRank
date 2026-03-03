@@ -8,3 +8,15 @@ ob zaključku tekmovanja popup
 pri skupnem izvozu grupiraj po predpisanih kategorijah (preverim katere so)
 
 edit score modalno okno reset vrednosti ob zaprtju (?)
+
+dodaj affix gumb za scroll nazaj do vrha
+dodaj watermark
+
+zbuildaj .exe file z electron							[X]
+
+dimenzije .exe okna								[X]
+SKUPNO v tabeli									[X]
+skriti zgornjo opravilno vrstico v desktop aplikaciji				[X]
+
+porihtaj logotipe in slike v zbuildanem .exe programu
+posodobi stiliranje izvožene excel datoteke

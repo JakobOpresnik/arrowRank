@@ -12,3 +12,9 @@ node_modules
 # SQLite database files
 *.db
 /backend/*.db
+
+/backend/build/
+/backend/dist/
+
+/electron/build/
+/electron/dist/

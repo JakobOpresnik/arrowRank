@@ -27,12 +27,6 @@ export const useCompetitionStore = create<CompetitionStore>()(
       //   partialize: (state) => ({
       //     selectedCompetition: state.selectedCompetition,
       //   }),
-    }
-  )
+    },
+  ),
 );
-
-// export const useCompetitionStore = create<CompetitionStore>((set) => ({
-//   selectedCompetition: null,
-//   setSelectedCompetition: (competition: Competition | null) =>
-//     set({ selectedCompetition: competition }),
-// }));

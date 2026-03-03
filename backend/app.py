@@ -1,6 +1,5 @@
 from csv import DictReader
 import os
-import uuid
 import uvicorn
 
 from fastapi import FastAPI, HTTPException, Depends, Query, UploadFile, File, Form
@@ -8,9 +7,9 @@ from sqlalchemy import desc, asc, func
 from sqlalchemy.orm import Session
 from typing import Optional, List, Dict
 
-from models import AgeGroup, Category, Gender, Base, Archer, Competition, Language
+from models import AgeGroup, Category, Gender, Base, Archer, Competition
 from schemas import ArcherCreate, ArcherOut, ArcherScoreUpdate, CompetitionOut
-from constants import DATABASE_URL, UPLOAD_DIR
+from constants import DATABASE_URL
 from database import SessionLocal, engine
 from middleware import setup_cors
 from storage import save_uploaded_file, setup_storage
@@ -64,7 +63,6 @@ def health():
 def upload_data_into_db(
     file: UploadFile = File(...),
     competition_id: int = Form(...),
-    language: Language = Form(Language.EN.value),    # default language is English
     db: Session = Depends(get_db)
 ) -> None:
     # check if competition exists
@@ -88,7 +86,7 @@ def upload_data_into_db(
             first_name, last_name = full_name, ""
 
         full_category: str = row.get("Slog", "")
-        category, gender, age_group = parse_category(full_category, language)
+        category, gender, age_group = parse_category(full_category)
 
         archer = Archer(
             first_name=first_name,

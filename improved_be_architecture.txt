@@ -1,0 +1,19 @@
+app/
+├── main.py              # FastAPI app creation only
+├── api/
+│   ├── deps.py          # get_db, auth deps
+│   ├── routers/
+│   │   ├── archers.py
+│   │   ├── competitions.py
+│   │   └── leaderboards.py
+├── services/
+│   ├── archer_service.py
+│   ├── competition_service.py
+├── repositories/
+│   ├── archer_repo.py
+│   ├── competition_repo.py
+├── models/
+├── schemas/
+├── core/
+│   ├── config.py
+│   ├── logging.py

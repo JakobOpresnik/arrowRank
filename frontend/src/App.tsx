@@ -77,32 +77,32 @@ function App() {
     categoryFilter ?? '',
     genderFilter ?? '',
     ageGroupFilter ?? '',
-    SORTING
+    SORTING,
   );
   const { mutate: updateScore } = useArchersUpdateScore(
-    selectedCompetition?.id ?? 0
+    selectedCompetition?.id ?? 0,
   );
   const { mutate: clearScores } = useArchersClearScores(
-    selectedCompetition?.id ?? 0
+    selectedCompetition?.id ?? 0,
   );
 
   const archersDataExists: boolean = useMemo(
     () => !!archers && archers.length > 0,
-    [archers]
+    [archers],
   );
 
   const areAnyFiltersApplied: boolean = useMemo(
     () =>
       !!clubFilter || !!categoryFilter || !!genderFilter || !!ageGroupFilter,
-    [clubFilter, categoryFilter, genderFilter, ageGroupFilter]
+    [clubFilter, categoryFilter, genderFilter, ageGroupFilter],
   );
 
   const areAnyScoresPresent: boolean = useMemo(() => {
     if (!archers || archers.length === 0) return false;
     return archers.some((archer: Archer) =>
       scoreKeys.some(
-        (points) => archer[`score${points}` as keyof Archer] !== null
-      )
+        (points) => archer[`score${points}` as keyof Archer] !== null,
+      ),
     );
   }, [archers]);
 
@@ -152,8 +152,22 @@ function App() {
 
   const HeaderLogo = (): OptionalElement => {
     if (!selectedCompetition) return null;
+
     const { logo_url } = selectedCompetition;
+
     const handleClick = () => setIsOpenAddLogo(true);
+
+    /* if (!selectedCompetition || !selectedCompetition.logo_url) {
+      return (
+        <Tooltip title={t('competitionLogoAddTooltip')} placement='top' arrow>
+          <AddPhotoAlternateIcon
+            sx={{ width: 40, height: 'auto' }}
+            cursor='pointer'
+            onClick={handleClick}
+          />
+        </Tooltip>
+      );
+    } */
 
     if (!logo_url) {
       return (
@@ -166,6 +180,11 @@ function App() {
         </Tooltip>
       );
     }
+
+    console.log(
+      'ORG LOGO PATH: ',
+      `${BE_BASE_URL}${selectedCompetition!.logo_url}`,
+    );
 
     return (
       <Box

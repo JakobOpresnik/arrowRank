@@ -1,4 +1,5 @@
-import * as XLSX from 'xlsx';
+// import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx-js-style';
 import { saveAs } from 'file-saver';
 import { computeArcherRanks } from '../components/ArcherList';
 import {
@@ -47,7 +48,8 @@ const exportTableToExcel = (archers: Archer[]): void => {
 
     const total: number | undefined = scoreKeys.every(
       (key) =>
-        (scores[`score${key}` as keyof ArcherScores] ?? undefined) === undefined
+        (scores[`score${key}` as keyof ArcherScores] ?? undefined) ===
+        undefined,
     )
       ? undefined
       : scoreKeys.reduce((sum: number, key) => {
@@ -78,6 +80,21 @@ const exportTableToExcel = (archers: Archer[]): void => {
   worksheet['!merges'] = [
     { s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 1 } },
   ];
+
+  // style header text
+  const topHeaderCell: string = XLSX.utils.encode_cell({ r: 0, c: 0 });
+  if (worksheet[topHeaderCell]) {
+    worksheet[topHeaderCell].s = {
+      font: {
+        bold: true,
+        sz: 14,
+      },
+      alignment: {
+        horizontal: 'center',
+        vertical: 'center',
+      },
+    };
+  }
 
   // add header row
   XLSX.utils.sheet_add_aoa(worksheet, [headers], { origin: 1 });

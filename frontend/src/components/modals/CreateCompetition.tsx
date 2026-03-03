@@ -44,7 +44,7 @@ const CreateCompetition = ({
   const [logo, setLogo] = useState<string | null>(
     selectedCompetition?.logo_url && isLogoUploadOnly
       ? `${BE_BASE_URL}${selectedCompetition?.logo_url}`
-      : null
+      : null,
   );
   const [logoFile, setLogoFile] = useState<File | null>(null);
 
@@ -52,23 +52,23 @@ const CreateCompetition = ({
 
   const { mutate: createCompetition } = useAddCompetition();
   const { mutate: uploadCompetitionLogo } = useUploadCompetitionLogo(
-    selectedCompetition?.id || 0
+    selectedCompetition?.id || 0,
   );
 
   const clearFilters = useFilterStore(
-    (state: FilterStore) => state.clearFilters
+    (state: FilterStore) => state.clearFilters,
   );
 
   const isNameValid: boolean = useMemo(() => name.length >= 5, [name]);
   const isDateValid: boolean = useMemo(() => date !== '', [date]);
   const isLocationValid: boolean = useMemo(
     () => location.length >= 5,
-    [location]
+    [location],
   );
 
   const isSubmitDisabled: boolean = useMemo(
     () => !isNameValid || !isDateValid || !isLocationValid,
-    [isDateValid, isLocationValid, isNameValid]
+    [isDateValid, isLocationValid, isNameValid],
   );
 
   const handleLogoUpload = (e: ChangeEvent<HTMLInputElement>): void => {
@@ -115,7 +115,7 @@ const CreateCompetition = ({
           onSuccess: (updatedCompetition: Competition) => {
             handleSubmitSuccess(updatedCompetition);
           },
-        }
+        },
       );
     } else {
       createCompetition(
@@ -123,7 +123,7 @@ const CreateCompetition = ({
         {
           onError: (err: Error) => console.error(err),
           onSuccess: () => handleSubmitSuccess(),
-        }
+        },
       );
     }
 
@@ -134,7 +134,7 @@ const CreateCompetition = ({
   const handleClearFile = (): void => {
     setLogo(null);
     const input = document.getElementById(
-      'competition-image'
+      'competition-image',
     ) as HTMLInputElement;
     if (input) input.value = '';
   };
@@ -277,11 +277,11 @@ const CreateCompetition = ({
                 <Button
                   component='span'
                   variant='solid'
-                  sx={{ paddingRight: 2.5, paddingTop: 1.1 }}
+                  sx={{ paddingRight: 2.5 /* , paddingTop: 1.1 */ }}
                   startDecorator={
                     <ImageIcon
                       sx={{
-                        marginBottom: 0.35,
+                        // marginBottom: 0.35,
                         marginLeft: -0.5,
                         paddingRight: 0.5,
                         color: '#FFF',

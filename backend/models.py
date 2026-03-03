@@ -4,11 +4,6 @@ from enum import Enum
 
 Base = declarative_base()
 
-class Language(Enum):
-    EN = 'en'
-    SL = 'sl'
-
-
 class Category(Enum):
     BAREBOW = 'barebow'
     LONG_BOW = 'long bow'

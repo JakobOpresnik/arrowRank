@@ -1,0 +1,73 @@
+CREATE SINGULAR .EXE FILE FOR YOUR APP USING ELECTRON:
+
+=======================================================================
+STEP 1:
+order your project into the following subfolders
+
+- /backend
+- /frontend
+- /electron
+
+=======================================================================
+STEP 2:
+build and run your FE and BE to test if they function properly
+
+> cd /frontend
+> pnpm run build && pnpm preview
+
+> cd /backend
+> pyinstaller --onefile <main-file>.py --name backend
+
+this creates:
+- /frontend/dist/index.html
+- /backend/build/backend.exe
+
+=======================================================================
+STEP 3:
+create the following files in /electron:
+- main.js	---> runs main process
+- preload.js	---> runs before app loads
+- package.json	---> core build config
+- package-lock.json (generated)
+
+=======================================================================
+STEP 4:
+build electron
+
+> cd /electron
+> rm -rf dist
+> pnpm run build
+
+this creates:
+- /electron/dist/*.exe
+
+=======================================================================
+STEP 5:
+run the newly created .exe file as administrator
+
+or
+
+> cd /electron/dist
+> ls -la
+> ./ArrowRank-Setup-1.0.0.exe
+
+=======================================================================
+STEP 6:
+check if process is running at specified port
+
+> netstat -ano | findstr :<port>
+
+=======================================================================
+STEP 7:
+kill running process if needed
+
+> taskkill /PID <process_id> /F
+
+=======================================================================
+STEP 8:
+run .exe file again if needed in CLI
+
+> cd "C:\Users\jakob\AppData\Local\Programs\arrow-rank"
+> ArrowRank.exe
+
+=======================================================================
