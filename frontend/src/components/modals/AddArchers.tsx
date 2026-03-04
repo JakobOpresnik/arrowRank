@@ -72,7 +72,7 @@ const AddArchers = ({ open, onClose }: AddArchersProps) => {
     () =>
       !!firstName &&
       !!lastName &&
-      !!club &&
+      !!club && club.length >= 3 &&
       !!selectedCompetition &&
       !!category &&
       !!gender &&
@@ -250,7 +250,7 @@ const AddArchers = ({ open, onClose }: AddArchersProps) => {
                     </FormControl>
                   </Stack>
                   <Stack direction='column' sx={{ width: '50%' }}>
-                    <FormControl>
+                    <FormControl required error={!!club && club.length < 3}>
                       <FormLabel>
                         <Typography ml={0.5}>{t('club')}</Typography>
                       </FormLabel>
