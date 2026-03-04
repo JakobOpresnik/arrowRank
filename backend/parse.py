@@ -30,10 +30,10 @@ def parse_category(category_value: str):
         gender = Gender.MALE
     
     # parse age group
-    if "u10" in category_value:
-        age_group = AgeGroup.U10
+    if "u11" in category_value:
+        age_group = AgeGroup.U11
         gender = Gender.MIXED
-    if "u15" in category_value:
-        age_group = AgeGroup.U15
+    if "u16" in category_value:
+        age_group = AgeGroup.U16
     
     return category, gender, age_group

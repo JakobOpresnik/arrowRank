@@ -19,8 +19,8 @@ class Gender(Enum):
 
 
 class AgeGroup(Enum):
-    U10 = 'U10'
-    U15 = 'U15'
+    U11 = 'U11'
+    U16 = 'U16'
     ADULTS = 'adults'
 
 

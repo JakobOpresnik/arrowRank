@@ -53,8 +53,8 @@ const SL: Record<string, string> = {
   female: sl.tableGenderFemale,
   mixed: sl.tableGenderMixed,
   adults: '',
-  u10: sl.tableAgeGroupU10,
-  u15: sl.tableAgeGroupU15,
+  u10: sl.tableAgeGroupU11,
+  u15: sl.tableAgeGroupU16,
 };
 
 function getCategoryLabel(archer: Archer): string {

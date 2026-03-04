@@ -13,7 +13,7 @@ export const BOW_CATEGORIES: string[] = [
   'Primitive bow',
   'Guest',
 ];
-export const AGE_GROUPS: string[] = ['All', 'U10', 'U15', 'Adults'];
+export const AGE_GROUPS: string[] = ['All', 'U11', 'U16', 'Adults'];
 export const GENDER_OPTIONS: string[] = ['All', 'Male', 'Female', 'Mixed'];
 
 /*

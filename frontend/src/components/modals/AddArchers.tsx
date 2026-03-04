@@ -114,7 +114,7 @@ const AddArchers = ({ open, onClose }: AddArchersProps) => {
 
   const isGenderSelectDisabled: boolean = useMemo(
     () =>
-      ageGroup === 'U10' ||
+      ageGroup === 'U11' ||
       category === 'primitive bow' ||
       category === 'guest',
     [ageGroup, category]
@@ -357,8 +357,8 @@ const AddArchers = ({ open, onClose }: AddArchersProps) => {
                           newValue: string | null
                         ) => {
                           setAgeGroup(newValue);
-                          // auto set gender to mixed for U10
-                          if (newValue === 'U10') {
+                          // auto set gender to mixed for U11
+                          if (newValue === 'U11') {
                             setGender('mixed');
                           }
                         }}
