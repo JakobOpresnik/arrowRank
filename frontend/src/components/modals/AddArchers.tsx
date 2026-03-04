@@ -113,11 +113,8 @@ const AddArchers = ({ open, onClose }: AddArchersProps) => {
   };
 
   const isGenderSelectDisabled: boolean = useMemo(
-    () =>
-      ageGroup === 'U11' ||
-      category === 'primitive bow' ||
-      category === 'guest',
-    [ageGroup, category]
+    () => ageGroup === 'U11',
+    [ageGroup]
   );
 
   return (
@@ -309,13 +306,6 @@ const AddArchers = ({ open, onClose }: AddArchersProps) => {
                           newValue: string | null
                         ) => {
                           setCategory(newValue);
-                          // auto set gender to mixed for primitive bow and guest
-                          if (
-                            newValue === 'primitive bow' ||
-                            newValue === 'guest'
-                          ) {
-                            setGender('mixed');
-                          }
                         }}
                         startDecorator={
                           <CategoryIcon

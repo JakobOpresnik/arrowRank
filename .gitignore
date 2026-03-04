@@ -13,6 +13,9 @@ node_modules
 *.db
 /backend/*.db
 
+# SQLite CLI binary
+*.exe
+
 /backend/build/
 /backend/dist/
 

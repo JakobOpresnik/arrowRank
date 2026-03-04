@@ -18,10 +18,8 @@ def parse_category(category_value: str):
         category = Category.TRADITIONAL_BOW
     if "primitivni" in category_value:
         category = Category.PRIMITIVE_BOW
-        gender = Gender.MIXED
     if "gosti" in category_value:
         category = Category.GUEST
-        gender = Gender.MIXED
     
     # parse gender
     if "ženske" in category_value or "zenske" in category_value or "punce" in category_value:
