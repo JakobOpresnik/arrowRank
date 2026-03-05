@@ -148,10 +148,9 @@ def update_archer_score(
     update: ArcherScoreUpdate,
     db: Session = Depends(get_db)
 ) -> ArcherOut:
-    # find correct archer
+    # find correct archer by id
     archer: Optional[Archer] = db.query(Archer).filter(
-        Archer.first_name == update.first_name,
-        Archer.last_name == update.last_name
+        Archer.id == update.id
     ).first()
 
     if not archer:
@@ -298,7 +297,7 @@ def get_archers_filtered(
     bow_category: Optional[Category] = Query(None), # optional query parameter
     gender: Optional[Gender] = Query(None),         # optional query parameter
     age_group: Optional[AgeGroup] = Query(None),    # optional query parameter
-    sort: Optional[str] = Query(None, regex="^(asc|desc)$"),
+    sort: Optional[str] = Query(None, pattern="^(asc|desc)$"),
     db: Session = Depends(get_db)
 ) -> List[Archer]:
     try:

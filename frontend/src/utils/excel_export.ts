@@ -171,15 +171,29 @@ const exportTableToExcel = async (
     // ws.getRow(r).height = 22;
     // r++;
 
-    const eventCell = ws.getCell(r, HDR_TEXT_START);
-    eventCell.value = `Pokal tradicionalnih lokov\n${competition.location} ${formatDate(competition.date)}`;
-    eventCell.font = { name: 'Calibri', size: 12, color: { argb: BLACK } };
-    eventCell.fill = whiteFill;
-    eventCell.alignment = {
-      horizontal: 'center',
-      vertical: 'middle',
-      wrapText: true,
-    };
+    const titleCell = ws.getCell(r, HDR_TEXT_START);
+    titleCell.value = 'Pokal tradicionalnih lokov';
+    titleCell.font = { name: 'Calibri', size: 13, bold: true, color: { argb: BLACK } };
+    titleCell.fill = whiteFill;
+    titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+    ws.mergeCells(r, HDR_TEXT_START, r, HDR_TEXT_END);
+    ws.getRow(r).height = 36;
+    r++;
+
+    const locationCell = ws.getCell(r, HDR_TEXT_START);
+    locationCell.value = competition.location;
+    locationCell.font = { name: 'Calibri', size: 12, color: { argb: BLACK } };
+    locationCell.fill = whiteFill;
+    locationCell.alignment = { horizontal: 'center', vertical: 'middle' };
+    ws.mergeCells(r, HDR_TEXT_START, r, HDR_TEXT_END);
+    ws.getRow(r).height = 36;
+    r++;
+
+    const dateCell = ws.getCell(r, HDR_TEXT_START);
+    dateCell.value = formatDate(competition.date);
+    dateCell.font = { name: 'Calibri', size: 12, color: { argb: BLACK } };
+    dateCell.fill = whiteFill;
+    dateCell.alignment = { horizontal: 'center', vertical: 'middle' };
     ws.mergeCells(r, HDR_TEXT_START, r, HDR_TEXT_END);
     ws.getRow(r).height = 36;
     r++;
@@ -253,7 +267,7 @@ const exportTableToExcel = async (
       ...(c === TOTAL_COLS ? { right: mediumLine } : {}),
     };
   }
-  ws.getRow(r).height = 38;
+  ws.getRow(r).height = 62;
   r++;
 
   // ── Empty rows after title ─────────────────────────────────────────────────
@@ -291,7 +305,6 @@ const exportTableToExcel = async (
       mc.fill = whiteFill;
       mc.border = { bottom: thinLine };
     }
-    ws.getRow(r).height = 18;
     r++;
 
     // Column headers
@@ -313,7 +326,6 @@ const exportTableToExcel = async (
       };
       cell.border = { bottom: thinLine };
     });
-    ws.getRow(r).height = 15;
     r++;
 
     // Data rows
@@ -348,7 +360,6 @@ const exportTableToExcel = async (
         setCell(COL_SCORES_START + si, v && v > 0 ? v : '', 'center');
       });
 
-      ws.getRow(r).height = 15;
       r++;
     });
 

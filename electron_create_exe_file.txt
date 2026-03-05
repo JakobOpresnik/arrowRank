@@ -58,6 +58,8 @@ check if process is running at specified port
 
 > netstat -ano | findstr :<port>
 
+(port here should be 8000)
+
 =======================================================================
 STEP 7:
 kill running process if needed
