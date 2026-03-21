@@ -24,6 +24,16 @@ node_modules
 
 .venv
 
+# TypeScript build cache
+frontend/tsconfig.tsbuildinfo
+
+# Git Bash crash dumps
+*.stackdump
+
+# Personal dev notes
+todos.txt
+improved_be_architecture.txt
+
 # Competition data files (Excel exports, CSV archer lists)
 /data/
 /results/
