@@ -220,10 +220,11 @@ def upload_data_into_db(
 
             print(f"Parsed archer: {first_name} {last_name}, email: {email}, club: {club}, category: {category}, gender: {gender}, age group: {age_group}")
 
-            # avoid duplicates
+            # avoid duplicates within the same competition
             exists: Optional[Archer] = db.query(Archer).filter(
                 Archer.first_name == first_name,
-                Archer.last_name == last_name
+                Archer.last_name == last_name,
+                Archer.competition_id == competition_id
             ).first()
 
             if exists is None:
