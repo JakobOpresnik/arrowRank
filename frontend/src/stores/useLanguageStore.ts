@@ -10,14 +10,13 @@ export const useLanguageStore = create<LanguageStore>()(
   persist(
     (set) => ({
       language: DEFAULT_LANGUAGE,
-      setLanguage: async (lang: Language) => {
-        await i18n.changeLanguage(lang); // switch i18next language
+      setLanguage: (lang: Language) => {
+        i18n.changeLanguage(lang); // switch i18next language
         set({ language: lang });
-        console.log('[LanguageStore] language changed to:', lang);
       },
     }),
     {
       name: 'language-store', // key in localStorage
-    }
-  )
+    },
+  ),
 );
