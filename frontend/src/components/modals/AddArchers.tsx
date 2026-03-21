@@ -1,33 +1,15 @@
-import {
-  Select,
-  Option,
-  Stack,
-  Typography,
-  Input,
-  Button,
-  Tabs,
-  TabList,
-  Tab,
-  TabPanel,
-  tabClasses,
-  FormControl,
-  FormLabel,
-} from '@mui/joy';
+import { Select, Stack, Text, TextInput, Button, Tabs, Group } from '@mantine/core';
 import UploadArchers from '../UploadArchers';
-import {
-  useMemo,
-  useState,
-  type ChangeEvent,
-  type FormEvent,
-  type SyntheticEvent,
-} from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import GroupAddIcon from '@mui/icons-material/GroupAdd';
-import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
-import CategoryIcon from '@mui/icons-material/Category';
-import HourglassTopIcon from '@mui/icons-material/HourglassTop';
-import WcIcon from '@mui/icons-material/Wc';
+import {
+  IconTrophy,
+  IconUsersGroup,
+  IconUserPlus,
+  IconCategory,
+  IconHourglass,
+  IconGenderBigender,
+} from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { Competition } from '../../types';
 import { useAddArcher } from '../../hooks/useAddArcher';
@@ -57,22 +39,35 @@ const AddArchers = ({ open, onClose }: AddArchersProps) => {
   const [ageGroup, setAgeGroup] = useState<string | null>(null);
   const [gender, setGender] = useState<string | null>(null);
 
-  // const [accordionIndex, setAccordionIndex] = useState<number | null>(0);
-
   const { data: competitions } = useCompetitions();
 
-  const handleCompetitionChange = (
-    _event: SyntheticEvent | null,
-    value: string | number | null
-  ): void => {
-    setSelectedCompetition(value as number);
-  };
+  const competitionData =
+    competitions?.map((c: Competition) => ({
+      value: String(c.id),
+      label: c.name,
+    })) ?? [];
+
+  const categoryData = BOW_CATEGORIES.slice(1).map((cat: string) => ({
+    value: cat.toLowerCase(),
+    label: t(`tableCategory${cat.replace(/\s+/g, '')}`),
+  }));
+
+  const ageGroupData = AGE_GROUPS.slice(1).map((ag: string) => ({
+    value: ag,
+    label: t(`tableAgeGroup${ag}`),
+  }));
+
+  const genderData = GENDER_OPTIONS.slice(1).map((g: string) => ({
+    value: g.toLowerCase(),
+    label: t(`tableGender${g}`),
+  }));
 
   const canSubmit: boolean = useMemo(
     () =>
       !!firstName &&
       !!lastName &&
-      !!club && club.length >= 3 &&
+      !!club &&
+      club.length >= 3 &&
       !!selectedCompetition &&
       !!category &&
       !!gender &&
@@ -95,7 +90,10 @@ const AddArchers = ({ open, onClose }: AddArchersProps) => {
           ageGroup === 'Adults' ? ageGroup.toLowerCase() : ageGroup ?? '',
       },
       {
-        onError: (err: Error) => { console.error(err); alert(`Error: ${err.message}`); },
+        onError: (err: Error) => {
+          console.error(err);
+          alert(`Error: ${err.message}`);
+        },
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ['archersFiltered'] });
           setFirstName(null);
@@ -121,60 +119,36 @@ const AddArchers = ({ open, onClose }: AddArchersProps) => {
       open={open}
       onClose={onClose}
       title={t('addArchers')}
-      maxWidth={1000}
+      maxWidth={520}
     >
-      <Tabs
-        aria-label='add archers tabs'
-        orientation='horizontal'
-        variant='plain'
-        defaultValue={0}
-        sx={{ width: 575 }}
-      >
-        <TabList
-          disableUnderline
-          sx={{
-            p: 0.5,
-            gap: 0.5,
-            borderRadius: 'xl',
-            bgcolor: 'background.level1',
-            [`& .${tabClasses.root}[aria-selected="true"]`]: {
-              boxShadow: 'sm',
-              bgcolor: 'background.surface',
-            },
-          }}
-        >
-          <Tab disableIndicator sx={{ width: '50%' }}>
-            <Stack direction='row' alignItems='center' gap={1.5}>
-              <GroupAddIcon color='primary' />
-              <Typography>{t('uploadArchers')}</Typography>
-            </Stack>
-          </Tab>
-          <Tab disableIndicator sx={{ width: '50%' }}>
-            <Stack direction='row' alignItems='center' gap={1.5}>
-              <PersonAddAlt1Icon color='primary' />
-              <Typography>{t('addArchersManually')}</Typography>
-            </Stack>
-          </Tab>
-        </TabList>
+      <Tabs defaultValue='upload'>
+        <Tabs.List grow>
+          <Tabs.Tab
+            value='upload'
+            leftSection={<IconUsersGroup size={18} />}
+          >
+            {t('uploadArchers')}
+          </Tabs.Tab>
+          <Tabs.Tab
+            value='manual'
+            leftSection={<IconUserPlus size={18} />}
+          >
+            {t('addArchersManually')}
+          </Tabs.Tab>
+        </Tabs.List>
 
-        <TabPanel value={0}>
-          <Stack direction='column' gap={2}>
-            <Typography>{t('selectCompetitionAndUploadArchers')}</Typography>
+        <Tabs.Panel value='upload' pt='md'>
+          <Stack gap='md'>
+            <Text>{t('selectCompetitionAndUploadArchers')}</Text>
             <Select
               name='competition'
-              startDecorator={
-                <EmojiEventsIcon color='primary' sx={{ paddingRight: 1 }} />
-              }
-              defaultValue=''
               placeholder={t('selectCompetition')}
-              onChange={handleCompetitionChange}
-            >
-              {competitions?.map((competition: Competition) => (
-                <Option key={competition.id} value={competition.id}>
-                  {competition.name}
-                </Option>
-              ))}
-            </Select>
+              data={competitionData}
+              leftSection={<IconTrophy size={18} />}
+              onChange={(value) =>
+                setSelectedCompetition(value ? Number(value) : null)
+              }
+            />
             <UploadArchers
               competitionId={selectedCompetition}
               onDone={() => {
@@ -183,234 +157,98 @@ const AddArchers = ({ open, onClose }: AddArchersProps) => {
               }}
             />
           </Stack>
-        </TabPanel>
+        </Tabs.Panel>
 
-        <TabPanel value={1}>
-          <Stack direction='column' gap={2}>
-            <form onSubmit={handleSubmit}>
-              <Stack direction='column' gap={2.5}>
-                <Stack direction='row' gap={2}>
-                  <Stack direction='column' sx={{ width: '50%' }}>
-                    <FormControl required>
-                      <FormLabel>
-                        <Typography ml={0.5}>{t('firstName')}</Typography>
-                      </FormLabel>
-                      <Input
-                        id='first-name'
-                        name='first-name'
-                        type='text'
-                        placeholder={t('enterFirstName')}
-                        value={firstName ?? ''}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                          setFirstName(e.target.value)
-                        }
-                        required
-                      />
-                    </FormControl>
-                  </Stack>
-                  <Stack direction='column' sx={{ width: '50%' }}>
-                    <FormControl required>
-                      <FormLabel>
-                        <Typography ml={0.5}>{t('lastName')}</Typography>
-                      </FormLabel>
-                      <Input
-                        id='last-name'
-                        name='last-name'
-                        type='text'
-                        placeholder={t('enterLastName')}
-                        value={lastName ?? ''}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                          setLastName(e.target.value)
-                        }
-                        required
-                      />
-                    </FormControl>
-                  </Stack>
-                </Stack>
-                <Stack direction='row' gap={2}>
-                  <Stack direction='column' sx={{ width: '50%' }}>
-                    <FormControl>
-                      <FormLabel>
-                        <Typography ml={0.5}>{t('email')}</Typography>
-                      </FormLabel>
-                      <Input
-                        id='email'
-                        name='email'
-                        type='email'
-                        placeholder={t('enterEmail')}
-                        value={email ?? ''}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                          setEmail(e.target.value)
-                        }
-                      />
-                    </FormControl>
-                  </Stack>
-                  <Stack direction='column' sx={{ width: '50%' }}>
-                    <FormControl required error={!!club && club.length < 3}>
-                      <FormLabel>
-                        <Typography ml={0.5}>{t('club')}</Typography>
-                      </FormLabel>
-                      <Input
-                        id='club'
-                        name='club'
-                        type='text'
-                        placeholder={t('enterClub')}
-                        value={club ?? ''}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                          setClub(e.target.value)
-                        }
-                      />
-                    </FormControl>
-                  </Stack>
-                </Stack>
-                <Stack direction='column' gap={2}>
-                  <Stack direction='column' gap={0.5} width='100%'>
-                    <FormControl required>
-                      <FormLabel>
-                        <Typography>{t('competition')}</Typography>
-                      </FormLabel>
-                      <Select
-                        name='competition'
-                        startDecorator={
-                          <EmojiEventsIcon
-                            color='primary'
-                            sx={{ paddingRight: 1 }}
-                          />
-                        }
-                        defaultValue=''
-                        placeholder={t('selectCompetitionToJoin')}
-                        onChange={handleCompetitionChange}
-                        required
-                      >
-                        {competitions?.map((competition: Competition) => (
-                          <Option key={competition.id} value={competition.id}>
-                            {competition.name}
-                          </Option>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Stack>
-                  <Stack direction='column' gap={0.5} width='100%'>
-                    <FormControl required>
-                      <FormLabel>
-                        <Typography>{t('bowCategory')}</Typography>
-                      </FormLabel>
-                      <Select
-                        name='bow-category'
-                        variant='outlined'
-                        defaultValue={category ?? ''}
-                        placeholder={t('selectBowCategory')}
-                        onChange={(
-                          _event: SyntheticEvent | null,
-                          newValue: string | null
-                        ) => {
-                          setCategory(newValue);
-                        }}
-                        startDecorator={
-                          <CategoryIcon
-                            color='primary'
-                            sx={{ marginRight: 0.5 }}
-                          />
-                        }
-                        required
-                      >
-                        {BOW_CATEGORIES.slice(1).map((category: string) => {
-                          const translationKey = `tableCategory${category.replace(
-                            /\s+/g,
-                            ''
-                          )}`;
-                          return (
-                            <Option
-                              key={category}
-                              value={category.toLowerCase()}
-                            >
-                              {t(translationKey)}
-                            </Option>
-                          );
-                        })}
-                      </Select>
-                    </FormControl>
-                  </Stack>
-                  <Stack direction='column' gap={0.5} width='100%'>
-                    <FormControl required>
-                      <FormLabel>
-                        <Typography>{t('ageGroup')}</Typography>
-                      </FormLabel>
-                      <Select
-                        name='age-group'
-                        variant='outlined'
-                        value={ageGroup}
-                        placeholder={t('selectAgeGroup')}
-                        onChange={(
-                          _event: SyntheticEvent | null,
-                          newValue: string | null
-                        ) => {
-                          setAgeGroup(newValue);
-                          // auto set gender to mixed for U11
-                          if (newValue === 'U11') {
-                            setGender('mixed');
-                          }
-                        }}
-                        startDecorator={
-                          <HourglassTopIcon
-                            color='primary'
-                            sx={{ marginRight: 0.5 }}
-                          />
-                        }
-                        required
-                      >
-                        {AGE_GROUPS.slice(1).map((ageGroup: string) => {
-                          const translationKey = `tableAgeGroup${ageGroup}`;
-                          return (
-                            <Option key={ageGroup} value={ageGroup}>
-                              {t(translationKey)}
-                            </Option>
-                          );
-                        })}
-                      </Select>
-                    </FormControl>
-                  </Stack>
-                  <Stack direction='column' gap={0.5} width='100%'>
-                    <FormControl>
-                      <FormLabel>
-                        <Typography>{t('gender')}</Typography>
-                      </FormLabel>
-                      <Select
-                        name='gender'
-                        variant='outlined'
-                        value={gender}
-                        placeholder={t('selectGender')}
-                        onChange={(
-                          _event: SyntheticEvent | null,
-                          newValue: string | null
-                        ) => {
-                          setGender(newValue);
-                        }}
-                        startDecorator={
-                          <WcIcon color='primary' sx={{ marginRight: 0.5 }} />
-                        }
-                        disabled={isGenderSelectDisabled}
-                        required
-                      >
-                        {GENDER_OPTIONS.slice(1).map((gender: string) => {
-                          const translationKey = `tableGender${gender}`;
-                          return (
-                            <Option key={gender} value={gender.toLowerCase()}>
-                              {t(translationKey)}
-                            </Option>
-                          );
-                        })}
-                      </Select>
-                    </FormControl>
-                  </Stack>
-                </Stack>
-                <Button sx={{ mt: 1 }} type='submit' disabled={!canSubmit}>
-                  {t('addArcherButton').toUpperCase()}
-                </Button>
-              </Stack>
-            </form>
-          </Stack>
-        </TabPanel>
+        <Tabs.Panel value='manual' pt='md'>
+          <form onSubmit={handleSubmit}>
+            <Stack gap='lg'>
+              <Group grow gap='md'>
+                <TextInput
+                  label={t('firstName')}
+                  placeholder={t('enterFirstName')}
+                  value={firstName ?? ''}
+                  onChange={(e) => setFirstName(e.currentTarget.value)}
+                  required
+                />
+                <TextInput
+                  label={t('lastName')}
+                  placeholder={t('enterLastName')}
+                  value={lastName ?? ''}
+                  onChange={(e) => setLastName(e.currentTarget.value)}
+                  required
+                />
+              </Group>
+              <Group grow gap='md'>
+                <TextInput
+                  label={t('email')}
+                  placeholder={t('enterEmail')}
+                  value={email ?? ''}
+                  onChange={(e) => setEmail(e.currentTarget.value)}
+                  type='email'
+                />
+                <TextInput
+                  label={t('club')}
+                  placeholder={t('enterClub')}
+                  value={club ?? ''}
+                  onChange={(e) => setClub(e.currentTarget.value)}
+                  required
+                  error={
+                    club !== null && club.length > 0 && club.length < 3
+                      ? 'Club name must be at least 3 characters'
+                      : undefined
+                  }
+                />
+              </Group>
+              <Select
+                label={t('competition')}
+                placeholder={t('selectCompetitionToJoin')}
+                data={competitionData}
+                leftSection={<IconTrophy size={18} />}
+                onChange={(value) =>
+                  setSelectedCompetition(value ? Number(value) : null)
+                }
+                required
+              />
+              <Group grow gap='md'>
+                <Select
+                  label={t('bowCategory')}
+                  placeholder={t('selectBowCategory')}
+                  data={categoryData}
+                  leftSection={<IconCategory size={18} />}
+                  onChange={(value) => setCategory(value)}
+                  required
+                />
+                <Select
+                  label={t('ageGroup')}
+                  placeholder={t('selectAgeGroup')}
+                  data={ageGroupData}
+                  value={ageGroup}
+                  leftSection={<IconHourglass size={18} />}
+                  onChange={(value) => {
+                    setAgeGroup(value);
+                    if (value === 'U11') {
+                      setGender('mixed');
+                    }
+                  }}
+                  required
+                />
+              </Group>
+              <Select
+                label={t('gender')}
+                placeholder={t('selectGender')}
+                data={genderData}
+                value={gender}
+                leftSection={<IconGenderBigender size={18} />}
+                onChange={(value) => setGender(value)}
+                disabled={isGenderSelectDisabled}
+                required
+              />
+              <Button mt='xs' type='submit' disabled={!canSubmit}>
+                {t('addArcherButton').toUpperCase()}
+              </Button>
+            </Stack>
+          </form>
+        </Tabs.Panel>
       </Tabs>
     </ModalWrapper>
   );

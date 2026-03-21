@@ -1,24 +1,26 @@
 import {
   Divider,
-  Dropdown,
-  Input,
-  LinearProgress,
   Menu,
-  MenuButton,
-  MenuItem,
+  TextInput,
   Stack,
   Table,
   Tooltip,
-  Typography,
-} from '@mui/joy';
-import EditIcon from '@mui/icons-material/Edit';
+  Text,
+  Progress,
+  ActionIcon,
+  Group,
+  Paper,
+} from '@mantine/core';
+import {
+  IconEdit,
+  IconSearch,
+  IconX,
+  IconDots,
+  IconSettings,
+  IconUsers,
+  IconTrash,
+} from '@tabler/icons-react';
 import { useMemo, useState, useCallback, type ChangeEvent } from 'react';
-import SearchIcon from '@mui/icons-material/Search';
-import ClearIcon from '@mui/icons-material/Clear';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
-import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
-import DeleteIcon from '@mui/icons-material/Delete';
 import { useTranslation } from 'react-i18next';
 import {
   getScores,
@@ -51,9 +53,8 @@ import { useArcherClearScore } from '@/hooks/useArcherClearScore';
 
 export const SORTING = 'desc';
 const NUM_OF_FIXED_COLS = 7;
-const NUM_OF_SCORE_COLS = scoreKeys.length + 1 + 1; // +1 for TOTAL, +1 for actions
+const NUM_OF_SCORE_COLS = scoreKeys.length + 1 + 1;
 
-// compute score array for an archer
 function getScoreArray(archer: Archer): number[] {
   const scores: ArcherScores = getScores(archer);
   return scoreKeys.map(
@@ -61,7 +62,6 @@ function getScoreArray(archer: Archer): number[] {
   );
 }
 
-// check if two score arrays and totals are identical
 function isSameScore(
   total: number,
   scoreArray: number[],
@@ -132,7 +132,6 @@ const ArcherList = ({
     setAgeGroupFilter,
   } = useFilterStore();
 
-  // memoized translations
   const translations = useMemo(
     () => ({
       tableFirstName: t('tableFirstName'),
@@ -168,7 +167,6 @@ const ArcherList = ({
     }
   };
 
-  // get all unique clubs from all archers
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const clubs: string[] = [
     'All',
@@ -177,7 +175,6 @@ const ArcherList = ({
     ),
   ];
 
-  // filter archers with any scores
   const archersWithScores: Archer[] = useMemo(() => {
     if (!allArchers) return [];
     return allArchers.filter((archer: Archer) =>
@@ -193,7 +190,6 @@ const ArcherList = ({
     [archersWithScores.length, allArchers?.length]
   );
 
-  // filter archers
   const {
     data: archersFiltered,
     isLoading: isLoadingFilteredArchers,
@@ -215,219 +211,19 @@ const ArcherList = ({
     );
   }, [archersFiltered, searchTerm]);
 
-  // sort archers
   const sortedArchers: Archer[] = useAdvancedArcherSorting(searchedArchers);
 
   const numTableColumns: number = NUM_OF_FIXED_COLS + NUM_OF_SCORE_COLS;
 
-  // Table head component memoized
-  const TableHead = useMemo(() => {
-    const headerKeys: (string | number)[] = [
-      translations.tableScoreTotal,
-      ...scoreKeys,
-    ];
-    return (
-      <thead>
-        <tr>
-          <th rowSpan={2} style={{ width: 25, verticalAlign: 'middle' }}>
-            <Typography level='body-md'>#</Typography>
-          </th>
-          <th rowSpan={2} style={{ width: 120, verticalAlign: 'middle' }}>
-            <Typography level='body-md'>
-              {translations.tableFirstName}
-            </Typography>
-          </th>
-          <th rowSpan={2} style={{ width: 140, verticalAlign: 'middle' }}>
-            <Typography level='body-md'>
-              {translations.tableLastName}
-            </Typography>
-          </th>
-          <th rowSpan={2} style={{ width: 150, verticalAlign: 'middle' }}>
-            <Stack direction='column' spacing={1.5}>
-              <Typography level='body-md'>{translations.tableClub}</Typography>
-              <SelectClub
-                competitionId={selectedCompetition}
-                clubs={clubs}
-                selectedClub={club ?? ''}
-                onChange={setClubFilter}
-              />
-            </Stack>
-          </th>
-          <th rowSpan={2} style={{ width: 120, verticalAlign: 'middle' }}>
-            <Stack direction='column' spacing={1.5}>
-              <Typography level='body-md' sx={{ whiteSpace: 'pre-line' }}>
-                {translations.tableAgeGroup}
-              </Typography>
-              <SelectAgeGroup
-                competitionId={selectedCompetition}
-                selectedAgeGroup={ageGroup ?? ''}
-                onChange={setAgeGroupFilter}
-              />
-            </Stack>
-          </th>
-          <th rowSpan={2} style={{ width: 100, verticalAlign: 'middle' }}>
-            <Stack direction='column' spacing={1.5}>
-              <Typography level='body-md'>
-                {translations.tableGender}
-              </Typography>
-              <SelectGender
-                competitionId={selectedCompetition}
-                selectedGender={gender ?? ''}
-                onChange={setGenderFilter}
-              />
-            </Stack>
-          </th>
-          <th rowSpan={2} style={{ width: 160, verticalAlign: 'middle' }}>
-            <Stack direction='column' spacing={1.5}>
-              <Typography level='body-md'>
-                {translations.tableCategory}
-              </Typography>
-              <SelectCategory
-                competitionId={selectedCompetition}
-                selectedCategory={category ?? ''}
-                onChange={setCategoryFilter}
-              />
-            </Stack>
-          </th>
-          <th colSpan={12} style={{ verticalAlign: 'middle' }}>
-            <Typography level='body-md'>{translations.tableScore}</Typography>
-          </th>
-          <th rowSpan={2} style={{ width: 60, verticalAlign: 'middle' }}>
-            <ManageAccountsIcon sx={{ width: 28, height: 28 }} />
-          </th>
-        </tr>
-        <tr>
-          {headerKeys.map((score: string | number, index: number) => (
-            <th
-              key={`${index}-${score}`}
-              style={{ verticalAlign: 'middle' }}
-              colSpan={score === translations.tableScoreTotal ? 2 : 1}
-            >
-              <Typography level='body-md'>{score}</Typography>
-            </th>
-          ))}
-        </tr>
-      </thead>
-    );
-  }, [
-    translations,
-    selectedCompetition,
-    club,
-    category,
-    gender,
-    ageGroup,
-    setClubFilter,
-    setCategoryFilter,
-    setGenderFilter,
-    setAgeGroupFilter,
-    clubs,
-  ]);
+  const headerKeys: (string | number)[] = [
+    translations.tableScoreTotal,
+    ...scoreKeys,
+  ];
 
-  // Table body memoized
-  const TableBody = useMemo(() => {
-    const rankedArchers: ArcherExtended[] = computeArcherRanks(sortedArchers);
-    return (
-      <tbody>
-        {sortedArchers.length > 0 ? (
-          rankedArchers.map((archer: ArcherExtended) => {
-            const ageGroup = getTranslation('age', archer.age_group);
-            const gender = getTranslation('gender', archer.gender);
-            const category = getTranslation('category', archer.category);
-            return (
-              <tr
-                key={archer.id}
-                className={archer.total < 0 ? 'zero-score' : ''}
-              >
-                <td>{archer.rank}</td>
-                <td>{archer.first_name}</td>
-                <td>{archer.last_name}</td>
-                <td>{archer.club}</td>
-                <td>{ageGroup}</td>
-                <td>{gender}</td>
-                <td>{category}</td>
-                <td colSpan={2}>{archer.total >= 0 ? archer.total : ''}</td>
-                {scoreKeys.map((points) => (
-                  <td key={points}>
-                    {(archer[`score${points}` as keyof ArcherScores] ?? 0) > 0
-                      ? archer[`score${points}` as keyof ArcherScores]
-                      : ''}
-                  </td>
-                ))}
-                <td>
-                  <Dropdown>
-                    <MenuButton variant='plain' color='neutral'>
-                      <MoreHorizIcon
-                        style={{ width: 26, height: 26, cursor: 'pointer' }}
-                      />
-                    </MenuButton>
-                    <Menu>
-                      <Stack direction='column' spacing={1}>
-                        <MenuItem onClick={() => setEditingRow(archer.id)}>
-                          <Stack
-                            direction='row'
-                            alignItems='center'
-                            spacing={1.5}
-                          >
-                            <EditIcon
-                              style={{
-                                width: 24,
-                                height: 24,
-                                cursor: 'pointer',
-                              }}
-                              color='primary'
-                            />
-                            <Typography
-                              level='body-md'
-                              color='primary'
-                              paddingInlineEnd={1}
-                            >
-                              {translations.tableEditButton}
-                            </Typography>
-                          </Stack>
-                        </MenuItem>
-                        <Divider />
-                        <MenuItem onClick={() => setDeletingRow(archer.id)}>
-                          <Stack
-                            direction='row'
-                            alignItems='center'
-                            spacing={1.5}
-                          >
-                            <DeleteIcon
-                              style={{
-                                width: 24,
-                                height: 24,
-                                cursor: 'pointer',
-                                color: '#F54242',
-                              }}
-                            />
-                            <Typography
-                              level='body-md'
-                              paddingInlineEnd={1}
-                              sx={{ color: '#F54242' }}
-                            >
-                              {translations.tableDeleteButton}
-                            </Typography>
-                          </Stack>
-                        </MenuItem>
-                      </Stack>
-                    </Menu>
-                  </Dropdown>
-                </td>
-              </tr>
-            );
-          })
-        ) : (
-          <tr>
-            <td colSpan={numTableColumns + 1}>
-              <Typography color='neutral'>
-                {translations.noArchersFoundForFilters}
-              </Typography>
-            </td>
-          </tr>
-        )}
-      </tbody>
-    );
-  }, [sortedArchers, translations, numTableColumns, computeArcherRanks]);
+  const rankedArchers: ArcherExtended[] = useMemo(
+    () => computeArcherRanks(sortedArchers),
+    [sortedArchers]
+  );
 
   const handleSearchChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -435,7 +231,6 @@ const ArcherList = ({
 
   const clearSearch: () => void = useCallback(() => setSearchTerm(''), []);
 
-  // format progress number (decimal) according to locale
   const formattedProgress: string = new Intl.NumberFormat(i18n.language, {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
@@ -448,120 +243,257 @@ const ArcherList = ({
       error={error}
       isTable
     >
-      <Stack direction='row' spacing={2} sx={{ mb: 2 }}>
-        <Input
-          id='search-archers'
-          name='search-archers'
-          type='text'
+      <Group gap='md' mb='md' align='center'>
+        <TextInput
           placeholder={translations.archersSearch}
-          startDecorator={<SearchIcon color='primary' sx={{ mt: -0.35 }} />}
-          endDecorator={
-            searchTerm && (
-              <ClearIcon
-                color='error'
-                sx={{ cursor: 'pointer' }}
+          leftSection={<IconSearch size={16} color='gray' />}
+          rightSection={
+            searchTerm ? (
+              <IconX
+                size={14}
+                style={{ cursor: 'pointer', opacity: 0.5 }}
                 onClick={clearSearch}
               />
-            )
+            ) : undefined
           }
           value={searchTerm}
           onChange={handleSearchChange}
-          sx={{ height: 30, width: 330, borderRadius: 8, padding: 1 }}
+          w={300}
+          size='sm'
         />
 
-        <Tooltip
-          title={translations.progressBarTooltip}
-          placement='bottom'
-          variant='solid'
-          arrow
-          sx={{ marginBottom: 5 }}
-        >
-          <LinearProgress
-            determinate
-            variant='solid'
-            size='md'
-            thickness={36}
-            value={progress}
-            sx={{
-              width: '100%',
-              borderWidth: 2,
-              borderColor: '#FFF',
-              color: progress >= 100 ? '#5CD45B' : '#449bf2',
-              borderRadius: 8,
+        <Tooltip label={translations.progressBarTooltip} position='bottom'>
+          <div style={{ flex: 1 }}>
+            <div style={{ position: 'relative' }}>
+              <Progress.Root size={32} radius='md'>
+                <Progress.Section
+                  value={progress}
+                  color={progress >= 100 ? '#4abe4a' : 'brand.4'}
+                />
+              </Progress.Root>
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 700,
+                fontSize: 14,
+                color: '#fff',
+                textShadow: '0 0 4px rgba(0,0,0,0.7), 0 0 8px rgba(0,0,0,0.4)',
+                pointerEvents: 'none',
+              }}>
+                {progress >= 100
+                  ? translations.progressBarDone
+                  : `${translations.progressBarDoing} ${formattedProgress}%`}
+              </div>
+            </div>
+          </div>
+        </Tooltip>
+
+        <Tooltip label={translations.progressBarAbsNumberTooltip} position='bottom'>
+          <Paper
+            px='sm'
+            py={4}
+            radius='md'
+            style={{
+              backgroundColor: progress >= 100
+                ? '#d4f5d4'
+                : 'var(--mantine-color-brand-8)',
+              color: progress >= 100 ? '#1a1a1a' : '#f0f0f0',
             }}
           >
-            <Typography
-              level='body-sm'
-              sx={{
-                fontWeight: 600,
-                fontSize: '1.1rem',
-                zIndex: 100,
-                color: '#000',
-                wordSpacing: 5,
-                cursor: 'default',
-              }}
-            >
-              {progress >= 100
-                ? translations.progressBarDone
-                : `${translations.progressBarDoing} ${formattedProgress}%`}
-            </Typography>
-          </LinearProgress>
+            <Group gap='xs'>
+              <IconUsers size={18} style={{ opacity: 0.6 }} />
+              <Text fw={600} size='sm' style={{ cursor: 'default' }}>
+                {archersWithScores.length}/{allArchers?.length}
+              </Text>
+            </Group>
+          </Paper>
         </Tooltip>
-        <Tooltip
-          title={translations.progressBarAbsNumberTooltip}
-          placement='bottom'
-          variant='solid'
-          arrow
-          sx={{ marginBottom: 5 }}
+      </Group>
+
+      <Table.ScrollContainer minWidth={1200}>
+        <Table
+          striped
+          highlightOnHover
+          withTableBorder
+          styles={{
+            th: {
+              backgroundColor: 'var(--mantine-color-brand-8)',
+              color: '#f0f0f0',
+              padding: '8px',
+              textAlign: 'center',
+              fontWeight: 600,
+              fontSize: 14,
+            },
+            td: {
+              padding: '8px',
+              textAlign: 'center',
+              fontSize: 14,
+            },
+          }}
         >
-          <Stack
-            direction='row'
-            alignItems='center'
-            gap={2}
-            px={2}
-            borderRadius={8}
-            bgcolor={progress >= 100 ? '#5CD45B' : '#C7DFF7'}
-          >
-            <PeopleAltIcon sx={{ color: '#000' }} />
-
-            <Typography
-              alignContent='center'
-              // px={2}
-              fontSize='1.1rem'
-              fontWeight={600}
-              sx={{ color: '#000', cursor: 'default' }}
-            >
-              {archersWithScores.length} / {allArchers?.length}
-            </Typography>
-          </Stack>
-        </Tooltip>
-      </Stack>
-
-      <Table
-        border={1}
-        cellPadding={2}
-        sx={{
-          borderRadius: '8px',
-          overflow: 'hidden',
-          '& th': {
-            backgroundColor: '#9CC1FF',
-            color: '#333',
-            padding: '8px',
-            textAlign: 'center',
-          },
-          '& td': {
-            backgroundColor: '#D4E4FF',
-            color: '#333',
-            padding: '8px',
-            textAlign: 'center',
-            fontSize: '16px',
-          },
-          '& tr.zero-score td': { backgroundColor: '#FFDCDC' },
-        }}
-      >
-        {TableHead}
-        {TableBody}
-      </Table>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th rowSpan={2} style={{ width: 25, verticalAlign: 'middle' }}>
+                #
+              </Table.Th>
+              <Table.Th rowSpan={2} style={{ width: 120, verticalAlign: 'middle' }}>
+                {translations.tableFirstName}
+              </Table.Th>
+              <Table.Th rowSpan={2} style={{ width: 140, verticalAlign: 'middle' }}>
+                {translations.tableLastName}
+              </Table.Th>
+              <Table.Th rowSpan={2} style={{ width: 150, verticalAlign: 'middle' }}>
+                <Stack gap={4}>
+                  <span>{translations.tableClub}</span>
+                  <SelectClub
+                    competitionId={selectedCompetition}
+                    clubs={clubs}
+                    selectedClub={club ?? ''}
+                    onChange={setClubFilter}
+                  />
+                </Stack>
+              </Table.Th>
+              <Table.Th rowSpan={2} style={{ width: 120, verticalAlign: 'middle' }}>
+                <Stack gap={4}>
+                  <span style={{ whiteSpace: 'pre-line' }}>
+                    {translations.tableAgeGroup}
+                  </span>
+                  <SelectAgeGroup
+                    competitionId={selectedCompetition}
+                    selectedAgeGroup={ageGroup ?? ''}
+                    onChange={setAgeGroupFilter}
+                  />
+                </Stack>
+              </Table.Th>
+              <Table.Th rowSpan={2} style={{ width: 100, verticalAlign: 'middle' }}>
+                <Stack gap={4}>
+                  <span>{translations.tableGender}</span>
+                  <SelectGender
+                    competitionId={selectedCompetition}
+                    selectedGender={gender ?? ''}
+                    onChange={setGenderFilter}
+                  />
+                </Stack>
+              </Table.Th>
+              <Table.Th rowSpan={2} style={{ width: 160, verticalAlign: 'middle' }}>
+                <Stack gap={4}>
+                  <span>{translations.tableCategory}</span>
+                  <SelectCategory
+                    competitionId={selectedCompetition}
+                    selectedCategory={category ?? ''}
+                    onChange={setCategoryFilter}
+                  />
+                </Stack>
+              </Table.Th>
+              <Table.Th colSpan={12} style={{ verticalAlign: 'middle' }}>
+                {translations.tableScore}
+              </Table.Th>
+              <Table.Th rowSpan={2} style={{ width: 50, verticalAlign: 'middle' }}>
+                <IconSettings size={18} color='#f0f0f0' />
+              </Table.Th>
+            </Table.Tr>
+            <Table.Tr>
+              {headerKeys.map((score: string | number, index: number) => (
+                <Table.Th
+                  key={`${index}-${score}`}
+                  style={{ verticalAlign: 'middle' }}
+                  colSpan={score === translations.tableScoreTotal ? 2 : 1}
+                >
+                  {score}
+                </Table.Th>
+              ))}
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {sortedArchers.length > 0 ? (
+              rankedArchers.map((archer: ArcherExtended) => {
+                const ageGroupText = getTranslation('age', archer.age_group);
+                const genderText = getTranslation('gender', archer.gender);
+                const categoryText = getTranslation('category', archer.category);
+                return (
+                  <Table.Tr
+                    key={archer.id}
+                    style={archer.total >= 0 ? { backgroundColor: '#b3c1f2', color: '#1a1a1a' } : undefined}
+                  >
+                    <Table.Td>
+                      <Text fw={600} size='sm' c='dimmed'>
+                        {archer.rank}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>{archer.first_name}</Table.Td>
+                    <Table.Td>{archer.last_name}</Table.Td>
+                    <Table.Td>{archer.club}</Table.Td>
+                    <Table.Td>{ageGroupText}</Table.Td>
+                    <Table.Td>{genderText}</Table.Td>
+                    <Table.Td>{categoryText}</Table.Td>
+                    <Table.Td colSpan={2}>
+                      <Text fw={700} size='sm'>
+                        {archer.total >= 0 ? archer.total : ''}
+                      </Text>
+                    </Table.Td>
+                    {scoreKeys.map((points) => (
+                      <Table.Td key={points}>
+                        <Text size='sm' c={
+                          (archer[`score${points}` as keyof ArcherScores] ?? 0) > 0
+                            ? undefined
+                            : 'dimmed'
+                        }>
+                          {(archer[`score${points}` as keyof ArcherScores] ?? 0) > 0
+                            ? archer[`score${points}` as keyof ArcherScores]
+                            : ''}
+                        </Text>
+                      </Table.Td>
+                    ))}
+                    <Table.Td>
+                      <Menu position='bottom-end' withArrow shadow='sm'>
+                        <Menu.Target>
+                          <ActionIcon
+                            variant={archer.total >= 0 ? 'filled' : 'light'}
+                            color='brand'
+                            size='md'
+                          >
+                            <IconDots size={20} color={archer.total >= 0 ? '#fff' : undefined} />
+                          </ActionIcon>
+                        </Menu.Target>
+                        <Menu.Dropdown>
+                          <Menu.Item
+                            leftSection={<IconEdit size={16} color='light-dark(var(--mantine-color-brand-5), var(--mantine-color-brand-2))' />}
+                            onClick={() => setEditingRow(archer.id)}
+                          >
+                            <Text size='sm' style={{ color: 'light-dark(var(--mantine-color-brand-5), var(--mantine-color-brand-2))' }}>
+                              {translations.tableEditButton}
+                            </Text>
+                          </Menu.Item>
+                          <Divider my={4} />
+                          <Menu.Item
+                            leftSection={<IconTrash size={16} color='#F54242' />}
+                            onClick={() => setDeletingRow(archer.id)}
+                          >
+                            <Text size='sm' c='red'>
+                              {translations.tableDeleteButton}
+                            </Text>
+                          </Menu.Item>
+                        </Menu.Dropdown>
+                      </Menu>
+                    </Table.Td>
+                  </Table.Tr>
+                );
+              })
+            ) : (
+              <Table.Tr>
+                <Table.Td colSpan={numTableColumns + 1}>
+                  <Text c='dimmed' ta='center' py='lg'>
+                    {translations.noArchersFoundForFilters}
+                  </Text>
+                </Table.Td>
+              </Table.Tr>
+            )}
+          </Table.Tbody>
+        </Table>
+      </Table.ScrollContainer>
 
       <EditArcher
         open={!!editingRow}

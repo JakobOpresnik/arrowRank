@@ -1,23 +1,17 @@
 import { useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 import {
   Button,
-  Card,
-  DialogContent,
-  FormControl,
-  FormLabel,
-  Input,
   Stack,
+  Text,
+  TextInput,
   Tooltip,
-  Typography,
-} from '@mui/joy';
-import LocationPinIcon from '@mui/icons-material/LocationPin';
-import ClearIcon from '@mui/icons-material/Clear';
-import ImageIcon from '@mui/icons-material/Image';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+  Paper,
+  Group,
+  ActionIcon,
+} from '@mantine/core';
+import { DatePickerInput } from '@mantine/dates';
+import { IconMapPin, IconX, IconPhoto } from '@tabler/icons-react';
 import dayjs from 'dayjs';
-import type { PickerValue } from '@mui/x-date-pickers/internals';
 import { useTranslation } from 'react-i18next';
 import { BE_BASE_URL } from '../../constants';
 import { useAddCompetition } from '../../hooks/useAddCompetition';
@@ -25,7 +19,7 @@ import { useUploadCompetitionLogo } from '../../hooks/useUploadCompetitionLogo';
 import { useFilterStore, FilterStore } from '../../stores/useFilterStore';
 import { CreateCompetitionProps, Competition } from '../../types';
 import { ModalWrapper } from './ModalWrapper';
-import 'dayjs/locale/sl'; // Slovene locale
+import 'dayjs/locale/sl';
 
 const CreateCompetition = ({
   open,
@@ -74,12 +68,8 @@ const CreateCompetition = ({
   const handleLogoUpload = (e: ChangeEvent<HTMLInputElement>): void => {
     const file: File | undefined = e.target.files?.[0];
     if (!file) return;
-
-    // preview for UI
     const previewUrl: string = URL.createObjectURL(file);
     setLogo(previewUrl);
-
-    // actual file for backend upload
     setLogoFile(file);
   };
 
@@ -156,173 +146,104 @@ const CreateCompetition = ({
         <Button
           type='submit'
           form='create-competition-form'
-          disabled={!isLogoUploadOnly && isSubmitDisabled} // more concise version
+          disabled={!isLogoUploadOnly && isSubmitDisabled}
         >
           {submitButtonText}
         </Button>
       }
     >
       {!isLogoUploadOnly && (
-        <DialogContent>{t('createCompetitionInfo')}</DialogContent>
+        <Text size='sm' c='dimmed' mb='sm'>
+          {t('createCompetitionInfo')}
+        </Text>
       )}
       <form id='create-competition-form' onSubmit={handleSubmit}>
-        <Stack spacing={2}>
+        <Stack gap='md'>
           {!isLogoUploadOnly && (
             <>
-              <FormControl>
-                <FormLabel htmlFor='competition-name' required>
-                  {t('name')}
-                </FormLabel>
-                <Input
-                  id='competition-name'
-                  name='name'
-                  type='text'
-                  placeholder={t('competitionName')}
-                  value={name}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setName(e.target.value)
-                  }
-                  autoFocus
-                />
-                <Typography
-                  level='body-xs'
-                  paddingLeft={1}
-                  sx={{
-                    color: '#E64040',
-                  }}
-                >
-                  {isSubmitting && name.length < 5 && t('competitionNameError')}
-                </Typography>
-              </FormControl>
-              <FormControl>
-                <FormLabel htmlFor='competition-name' required>
-                  {t('date')}
-                </FormLabel>
-                <LocalizationProvider
-                  dateAdapter={AdapterDayjs}
-                  adapterLocale='sl'
-                >
-                  <DatePicker
-                    name='competition-date'
-                    value={date ? dayjs(date) : null}
-                    onChange={(newValue: PickerValue) => {
-                      if (newValue) setDate(newValue.format('YYYY-MM-DD'));
-                      // store as ISO
-                      else setDate('');
-                    }}
-                    // format='DD.MM.YYYY' // display in Slovene format
-                    slotProps={{
-                      textField: { size: 'small' },
-                    }} // optional styling
-                  />
-                </LocalizationProvider>
-              </FormControl>
-              <FormControl>
-                <FormLabel htmlFor='competition-name' required>
-                  {t('location')}
-                </FormLabel>
-                <Input
-                  id='competition-location'
-                  name='location'
-                  type='text'
-                  placeholder={t('competitionLocation')}
-                  value={location}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setLocation(e.target.value)
-                  }
-                  startDecorator={
-                    <LocationPinIcon
-                      color='primary'
-                      sx={{ paddingRight: 0.5 }}
-                    />
-                  }
-                />
-
-                <Typography
-                  level='body-xs'
-                  paddingLeft={1}
-                  sx={{
-                    color: '#E64040',
-                  }}
-                >
-                  {isSubmitting &&
-                    location.length < 5 &&
-                    t('competitionLocationError')}
-                </Typography>
-              </FormControl>
+              <TextInput
+                label={t('name')}
+                placeholder={t('competitionName')}
+                value={name}
+                onChange={(e) => setName(e.currentTarget.value)}
+                required
+                autoFocus
+                error={
+                  isSubmitting && name.length < 5
+                    ? t('competitionNameError')
+                    : undefined
+                }
+              />
+              <DatePickerInput
+                label={t('date')}
+                placeholder={t('date')}
+                value={date ? dayjs(date).toDate() : null}
+                onChange={(value) => {
+                  if (value) setDate(dayjs(value).format('YYYY-MM-DD'));
+                  else setDate('');
+                }}
+                required
+                locale='sl'
+              />
+              <TextInput
+                label={t('location')}
+                placeholder={t('competitionLocation')}
+                value={location}
+                onChange={(e) => setLocation(e.currentTarget.value)}
+                required
+                leftSection={<IconMapPin size={18} />}
+                error={
+                  isSubmitting && location.length < 5
+                    ? t('competitionLocationError')
+                    : undefined
+                }
+              />
             </>
           )}
 
-          <Stack direction='column' gap={0.7}>
+          <Stack gap={6}>
             {!isLogoUploadOnly && (
-              <Typography
-                fontSize={14}
-                fontWeight={500}
-                sx={{ color: '#171A1C' }}
-              >
+              <Text size='sm' fw={500}>
                 {t('competitionLogo')}
-              </Typography>
+              </Text>
             )}
-            <Stack direction='row' gap={1}>
-              <Input
+            <Group gap='sm'>
+              <input
                 id='competition-image'
                 name='logo-upload'
                 type='file'
-                title={t('competitionUploadLogo')}
-                sx={{ display: 'none', padding: 1 }}
+                accept='image/*'
+                style={{ display: 'none' }}
                 onChange={handleLogoUpload}
               />
-
               <label htmlFor='competition-image'>
-                <Button
-                  component='span'
-                  variant='solid'
-                  sx={{ paddingRight: 2.5 /* , paddingTop: 1.1 */ }}
-                  startDecorator={
-                    <ImageIcon
-                      sx={{
-                        // marginBottom: 0.35,
-                        marginLeft: -0.5,
-                        paddingRight: 0.5,
-                        color: '#FFF',
-                      }}
-                    />
-                  }
-                >
+                <Button component='span' leftSection={<IconPhoto size={18} />}>
                   {doesLogoExist
                     ? t('competitionLogoChange')
                     : t('competitionLogoAdd')}
                 </Button>
               </label>
-              <Tooltip
-                title={t('competitionLogoDelete')}
-                placement='right'
-                arrow
-              >
-                <Button
-                  sx={{
-                    backgroundColor: '#F55656',
-                    '&:hover': {
-                      backgroundColor: '#F54242',
-                    },
-                  }}
+              <Tooltip label={t('competitionLogoDelete')} position='right'>
+                <ActionIcon
+                  variant='filled'
+                  style={{ backgroundColor: '#F55656', color: '#fff' }}
+                  size='lg'
                   onClick={handleClearFile}
-                  disabled={!isLogoUploadOnly && !logo} // more concise version
-                  // disabled={isLogoUploadOnly ? false : !logo}
+                  disabled={!isLogoUploadOnly && !logo}
                 >
-                  <ClearIcon />
-                </Button>
+                  <IconX size={18} />
+                </ActionIcon>
               </Tooltip>
-            </Stack>
+            </Group>
           </Stack>
           {logo && (
-            <Card variant='outlined' sx={{ width: 300 }}>
+            <Paper withBorder w={300} p='xs'>
               <img
                 src={logo}
                 alt={t('competitionLogoPreviewAltText')}
                 style={{ width: '100%', borderRadius: 8 }}
               />
-            </Card>
+            </Paper>
           )}
         </Stack>
       </form>

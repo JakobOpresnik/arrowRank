@@ -1,4 +1,4 @@
-import { Box, CircularProgress, Typography } from '@mui/joy';
+import { Center, Loader, Text } from '@mantine/core';
 import { MissingDataProps } from '../types';
 
 const MissingDataWrapper = <T,>({
@@ -10,30 +10,25 @@ const MissingDataWrapper = <T,>({
 }: MissingDataProps<T>) => {
   if (isLoading) {
     return (
-      <Box display='flex' justifyContent='center' py={2}>
-        <CircularProgress />
-      </Box>
+      <Center py='md'>
+        <Loader />
+      </Center>
     );
   }
 
   if (error) {
     return (
-      <Typography
-        level='body-sm'
-        sx={{
-          background: '#E64040',
-        }}
-      >
+      <Text size='sm' c='#fff' bg='#E64040' p='xs' style={{ borderRadius: 6 }}>
         Error: {error.message}
-      </Typography>
+      </Text>
     );
   }
 
   if (!data || (data.length === 0 && !isTable)) {
     return (
-      <Box display='flex' justifyContent='center' py={6}>
-        <Typography color='neutral'>No data available.</Typography>
-      </Box>
+      <Center py='xl'>
+        <Text c='dimmed'>No data available.</Text>
+      </Center>
     );
   }
 

@@ -1,7 +1,18 @@
 import './App.css';
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import CreateCompetition from './components/modals/CreateCompetition';
-import { Box, Button, Stack, Tooltip, Typography } from '@mui/joy';
+import {
+  ActionIcon,
+  Button,
+  Group,
+  Image,
+  Stack,
+  Text,
+  Title,
+  Tooltip,
+  useMantineColorScheme,
+} from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import AddArchers from './components/modals/AddArchers';
 import AddScore from './components/modals/AddScore';
 import {
@@ -14,13 +25,17 @@ import ArcherList, { SORTING } from './components/ArcherList';
 import SelectCompetition from './components/SelectCompetition';
 import { queryClient } from './lib/queryClient';
 import { useArchersFiltered } from './hooks/useArchersFiltered';
-import AddIcon from '@mui/icons-material/Add';
-import FormatListBulletedAddIcon from '@mui/icons-material/FormatListBulletedAdd';
-import AddToQueueIcon from '@mui/icons-material/AddToQueue';
-import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
-import SaveAltIcon from '@mui/icons-material/SaveAlt';
-import ClearIcon from '@mui/icons-material/Clear';
-import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
+import {
+  IconPlus,
+  IconListDetails,
+  IconTrophy,
+  IconPhotoPlus,
+  IconDownload,
+  IconX,
+  IconFilterOff,
+  IconSun,
+  IconMoon,
+} from '@tabler/icons-react';
 import { useArchersClearScores } from './hooks/useArchersClearScores';
 import { useArchersUpdateScore } from './hooks/useArchersUpdateScore';
 import { exportTableToExcel } from './utils/excel_export';
@@ -32,27 +47,19 @@ import { useTranslation } from 'react-i18next';
 import SelectLanguage from './components/SelectLanguage';
 import { useLanguageStore } from './stores/useLanguageStore';
 import { BE_BASE_URL } from './constants';
-import SnackBar from './components/SnackBar';
 import { useAdvancedArcherSorting } from './hooks/useAdvancedArcherSorting';
-// import SentlokLogo from './assets/sentlok_logo.svg';
 
 export type CompetitionState = 'created' | 'updated' | null;
-type OptionalElement = ReactNode | null | undefined;
 
 function App() {
   const { t } = useTranslation();
   const { language, setLanguage } = useLanguageStore();
+  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
 
   const [isOpenCompetition, setIsOpenCompetition] = useState<boolean>(false);
-
-  const [isSnackBarOpen, setIsSnackBarOpen] = useState<boolean>(false);
-  const [competitionState, setCompetitionState] =
-    useState<CompetitionState>(null);
-
   const [isOpenArchers, setIsOpenArchers] = useState<boolean>(false);
   const [isOpenScoreModal, setIsOpenScoreModal] = useState<boolean>(false);
   const [isOpenClearScores, setIsOpenClearScores] = useState<boolean>(false);
-
   const [isOpenAddLogo, setIsOpenAddLogo] = useState<boolean>(false);
 
   const {
@@ -66,9 +73,6 @@ function App() {
     setAgeGroupFilter,
   } = useFilterStore();
 
-  // const selectedCompetition: Competition | null = useCompetitionStore(
-  //   (state: CompetitionStore) => state.selectedCompetition
-  // );
   const { selectedCompetition, setSelectedCompetition } = useCompetitionStore();
 
   const { data: archers, isLoading: isLoadingArchers } = useArchersFiltered(
@@ -134,155 +138,117 @@ function App() {
 
   function formatDate(dateStr: string): string {
     const date = new Date(dateStr);
-
     if (isNaN(date.getTime())) {
       throw new Error(`Invalid date: ${dateStr}`);
     }
-
     const options: Intl.DateTimeFormatOptions = {
       day: '2-digit',
-      month: '2-digit', // use 'long' for full month names
+      month: '2-digit',
       year: 'numeric',
     };
-
     return new Intl.DateTimeFormat('sl-SI', options).format(date);
   }
 
-  const closeSnackBar = (): void => setIsSnackBarOpen(false);
+  const showSuccessNotification = (state: CompetitionState): void => {
+    const title =
+      state === 'created'
+        ? t('competitionCreatedSuccessfully')
+        : t('competitionUpdatedSuccessfully');
+    notifications.show({
+      title,
+      message: '',
+      color: 'teal',
+      autoClose: 2500,
+    });
+  };
 
-  const HeaderLogo = (): OptionalElement => {
+  const headerLogoElement = (() => {
     if (!selectedCompetition) return null;
-
     const { logo_url } = selectedCompetition;
-
     const handleClick = () => setIsOpenAddLogo(true);
-
-    /* if (!selectedCompetition || !selectedCompetition.logo_url) {
-      return (
-        <Tooltip title={t('competitionLogoAddTooltip')} placement='top' arrow>
-          <AddPhotoAlternateIcon
-            sx={{ width: 40, height: 'auto' }}
-            cursor='pointer'
-            onClick={handleClick}
-          />
-        </Tooltip>
-      );
-    } */
 
     if (!logo_url) {
       return (
-        <Tooltip title={t('competitionLogoAddTooltip')} placement='top' arrow>
-          <AddPhotoAlternateIcon
-            sx={{ width: 40, height: 'auto' }}
-            cursor='pointer'
+        <Tooltip label={t('competitionLogoAddTooltip')} position='top'>
+          <ActionIcon
+            variant='subtle'
+            color='gray'
+            size={40}
             onClick={handleClick}
-          />
+          >
+            <IconPhotoPlus size={28} />
+          </ActionIcon>
         </Tooltip>
       );
     }
 
-    console.log(
-      'ORG LOGO PATH: ',
-      `${BE_BASE_URL}${selectedCompetition!.logo_url}`,
-    );
-
     return (
-      <Box
-        component='img'
-        src={`${BE_BASE_URL}${selectedCompetition!.logo_url}`}
+      <Image
+        src={`${BE_BASE_URL}${selectedCompetition.logo_url}`}
         alt={t('competitionLogoHeaderAltText')}
-        sx={{ height: 150, width: 'auto', cursor: 'pointer' }}
+        h={120}
+        w='auto'
+        style={{ cursor: 'pointer' }}
         onClick={() => setIsOpenAddLogo(true)}
       />
     );
-  };
-
-  const headerLogoElement: OptionalElement = HeaderLogo();
+  })();
 
   const shouldDisplayClearFiltersButton: boolean =
     archersDataExists || areAnyFiltersApplied;
 
   return (
     <div className='App'>
-      <Stack
-        direction='row'
-        justifyContent={headerLogoElement ? 'space-between' : 'flex-start'}
-        gap={headerLogoElement ? 0 : 10}
-        alignItems='center'
-        mb={6}
+      <Group
+        justify={headerLogoElement ? 'space-between' : 'flex-start'}
+        gap={headerLogoElement ? 0 : 40}
+        align='center'
+        mb='xl'
       >
-        <Box
-          component='img'
-          src={PtlLogo}
-          alt={t('ptlLogoAltText')}
-          sx={{ height: 150, width: 'auto' }}
-        />
-        <Stack direction='column' alignItems='center' spacing={1}>
-          <Typography
-            level='h1'
-            fontSize='3rem'
-            letterSpacing={3}
-            style={{
-              wordSpacing: 10,
-              color: '#FFF',
-            }}
-          >
+        <Image src={PtlLogo} alt={t('ptlLogoAltText')} h={120} w='auto' />
+        <Stack align='center' gap={4}>
+          <Title order={1} fz='2.4rem' fw={700} lts={2}>
             PTL {t('scoreboard').toUpperCase()}
-          </Typography>
+          </Title>
           {selectedCompetition && (
-            <Typography
-              level='h1'
-              fontSize='2rem'
-              letterSpacing={3}
-              style={{
-                wordSpacing: 10,
-                color: '#FFF',
-              }}
-            >
-              {selectedCompetition.name}
-              <br />
-              {formatDate(selectedCompetition.date)}
-            </Typography>
+            <Text size='xl' fw={500} c='dimmed' ta='center'>
+              {selectedCompetition.name} &middot; {formatDate(selectedCompetition.date)}
+            </Text>
           )}
         </Stack>
 
-        <HeaderLogo />
-      </Stack>
+        {headerLogoElement}
+      </Group>
 
-      <Stack direction='column' spacing={3}>
-        <Stack direction='row' spacing={2} justifyContent='space-between'>
-          <Stack direction='row' spacing={2}>
+      <Stack gap='md'>
+        <Group justify='space-between'>
+          <Group gap='sm'>
             <SelectCompetition
               onSelect={() =>
                 queryClient.invalidateQueries({ queryKey: ['archers'] })
               }
             />
             <Button
-              sx={{ paddingInline: 3, paddingBlock: 1.5 }}
+              leftSection={<IconTrophy size={18} />}
               onClick={() => setIsOpenCompetition(true)}
             >
-              <AddToQueueIcon sx={{ marginRight: 2 }} />
-              <Typography sx={{ color: '#FFF' }}>
-                {t('createCompetition')}
-              </Typography>
+              {t('createCompetition')}
             </Button>
             <Button
-              sx={{ paddingInline: 3, paddingBlock: 1.5 }}
+              leftSection={<IconListDetails size={18} />}
               onClick={() => setIsOpenArchers(true)}
             >
-              <FormatListBulletedAddIcon sx={{ marginRight: 2 }} />
-              <Typography sx={{ color: '#FFF' }}>{t('addArchers')}</Typography>
+              {t('addArchers')}
             </Button>
             <AddArchers
               open={isOpenArchers}
               onClose={() => setIsOpenArchers(false)}
             />
             <Button
-              sx={{ paddingInline: 3, paddingBlock: 1.5 }}
+              leftSection={<IconPlus size={18} />}
               onClick={() => setIsOpenScoreModal(true)}
             >
-              <AddIcon sx={{ marginRight: 2 }} />
-              <Typography sx={{ color: '#FFF' }}>{t('addScore')}</Typography>
+              {t('addScore')}
             </Button>
             <AddScore
               open={isOpenScoreModal}
@@ -295,71 +261,65 @@ function App() {
               }}
               onClose={() => setIsOpenScoreModal(false)}
             />
-          </Stack>
-          <Stack direction='row' spacing={2}>
+          </Group>
+          <Group gap='sm'>
             {(archersDataExists || areAnyFiltersApplied) && (
               <Button
-                sx={{ paddingInline: 3, paddingBlock: 1.5 }}
-                onClick={() => exportTableToExcel(sortedArchers, selectedCompetition)}
+                leftSection={<IconDownload size={18} />}
+                onClick={() =>
+                  exportTableToExcel(sortedArchers, selectedCompetition)
+                }
               >
-                <SaveAltIcon sx={{ marginRight: 2 }} />
-                <Typography sx={{ color: '#FFF' }}>
-                  {t('exportButton')}
-                </Typography>
+                {t('exportButton')}
               </Button>
             )}
             {shouldDisplayClearFiltersButton && (
               <>
-                <Tooltip
-                  title={t('clearFiltersTooltip')}
-                  placement='top'
-                  sx={{ paddingInline: 1.5, paddingBlock: 1 }}
-                  arrow
-                >
-                  <Button
-                    sx={{
-                      backgroundColor: '#FCC844',
-                      '&:hover': {
-                        backgroundColor: '#F2B00A',
-                      },
-                    }}
+                <Tooltip label={t('clearFiltersTooltip')} position='top'>
+                  <ActionIcon
+                    variant='filled'
+                    style={{ backgroundColor: '#FCC844', color: '#000' }}
+                    size='lg'
                     onClick={resetFilters}
                   >
-                    <FilterAltOffIcon />
-                  </Button>
+                    <IconFilterOff size={18} />
+                  </ActionIcon>
                 </Tooltip>
                 {areAnyScoresPresent && (
-                  <Tooltip
-                    title={t('clearScoresTooltip')}
-                    placement='top'
-                    sx={{ paddingInline: 1.5, paddingBlock: 1 }}
-                    arrow
-                  >
-                    <Button
-                      sx={{
-                        backgroundColor: '#F55656',
-                        '&:hover': {
-                          backgroundColor: '#F54242',
-                        },
-                      }}
+                  <Tooltip label={t('clearScoresTooltip')} position='top'>
+                    <ActionIcon
+                      variant='filled'
+                      style={{ backgroundColor: '#F55656', color: '#fff' }}
+                      size='lg'
                       onClick={() => setIsOpenClearScores(true)}
                     >
-                      <ClearIcon />
-                    </Button>
+                      <IconX size={18} />
+                    </ActionIcon>
                   </Tooltip>
                 )}
               </>
             )}
 
             <SelectLanguage language={language} setLanguage={setLanguage} />
-          </Stack>
-        </Stack>
 
-        <SnackBar
-          open={isSnackBarOpen}
-          competitionState={competitionState}
-          onClose={closeSnackBar}
-        />
+            <Tooltip
+              label={colorScheme === 'dark' ? 'Light mode' : 'Dark mode'}
+              position='top'
+            >
+              <ActionIcon
+                variant='default'
+                size='lg'
+                onClick={() => toggleColorScheme()}
+              >
+                {colorScheme === 'dark' ? (
+                  <IconSun size={18} />
+                ) : (
+                  <IconMoon size={18} />
+                )}
+              </ActionIcon>
+            </Tooltip>
+          </Group>
+        </Group>
 
         {selectedCompetition && (
           <ArcherList
@@ -379,10 +339,7 @@ function App() {
       <CreateCompetition
         open={isOpenCompetition}
         selectedCompetition={selectedCompetition}
-        onCreated={() => {
-          setCompetitionState('created');
-          setIsSnackBarOpen(true);
-        }}
+        onCreated={() => showSuccessNotification('created')}
         onClose={() => setIsOpenCompetition(false)}
       />
 
@@ -393,8 +350,7 @@ function App() {
           if (updated) {
             setSelectedCompetition(updated);
           }
-          setCompetitionState('updated');
-          setIsSnackBarOpen(true);
+          showSuccessNotification('updated');
         }}
         onClose={() => setIsOpenAddLogo(false)}
         isLogoUploadOnly

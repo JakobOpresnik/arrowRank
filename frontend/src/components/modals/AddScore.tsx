@@ -1,13 +1,11 @@
 import {
-  Autocomplete,
-  FormControl,
+  Group,
   Select,
   Stack,
-  Typography,
-  Option,
+  Text,
   Button,
   Divider,
-} from '@mui/joy';
+} from '@mantine/core';
 import {
   useCallback,
   useEffect,
@@ -15,10 +13,8 @@ import {
   useState,
   type ChangeEvent,
   type FormEvent,
-  type SyntheticEvent,
 } from 'react';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import SearchIcon from '@mui/icons-material/Search';
+import { IconTrophy, IconSearch } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import ScoreInput from '../ScoreInput';
 import { TARGET_TOTAL_SCORE } from '../../constants';
@@ -50,11 +46,6 @@ const AddScore = ({
   const { t } = useTranslation();
 
   const [selectedArcher, setSelectedArcher] = useState<Archer | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_selectedAnotherCompetition, setSelectedAnotherCompetition] = useState<
-    number | null
-  >(selectedCompetition);
-
   const [scores, setScores] = useState<ArcherScores>(initializeScores);
 
   const { data: competitions } = useCompetitions();
@@ -62,15 +53,6 @@ const AddScore = ({
     selectedCompetition ?? 0
   );
 
-  const handleCompetitionChange = (
-    _event: SyntheticEvent | null,
-    value: string | number | null
-  ): void => {
-    setSelectedAnotherCompetition(value as number);
-  };
-
-  // refetch archers every time the modal is opened,
-  // to disable archers who already have scores
   useEffect(() => {
     if (open) {
       refetchArchers();
@@ -91,7 +73,6 @@ const AddScore = ({
         ...scores,
       });
     }
-    // reset score inputs
     setScores(initializeScores);
     setSelectedArcher(null);
   };
@@ -102,17 +83,11 @@ const AddScore = ({
       (value): value is number =>
         value !== undefined && !isNaN(value) && value >= 0
     );
-    const sum: number = numbers.reduce(
-      (acc: number, value: number) => acc + value,
-      0
-    );
-    return sum;
+    return numbers.reduce((acc: number, value: number) => acc + value, 0);
   };
 
   const validateScores = useCallback((scores: ArcherScores): boolean => {
-    const sum: number = getTotalEnteredScores(scores);
-    if (sum !== TARGET_TOTAL_SCORE) return false;
-    return true;
+    return getTotalEnteredScores(scores) === TARGET_TOTAL_SCORE;
   }, []);
 
   const scoreSum: number = useMemo(
@@ -137,43 +112,54 @@ const AddScore = ({
       ? `${t('addScoresExceeds').toUpperCase()} ${TARGET_TOTAL_SCORE}`
       : `${scoreSum} / ${TARGET_TOTAL_SCORE}`;
 
+  // Build archer select data - disable those who already have scores
+  const archerData = useMemo(() => {
+    if (!archers) return [];
+    return archers.map((archer: Archer) => {
+      const hasScores = scoreKeys.some(
+        (key) => archer[`score${key}` as ScoreKey] !== null
+      );
+      return {
+        value: String(archer.id),
+        label: `${archer.first_name} ${archer.last_name} (${archer.club})`,
+        disabled: hasScores,
+      };
+    });
+  }, [archers]);
+
+  const competitionData =
+    competitions?.map((c: Competition) => ({
+      value: String(c.id),
+      label: c.name,
+    })) ?? [];
+
   const SubmitButton = (
     <Button
       type='submit'
       form='add-score-form'
       disabled={!canSubmit}
-      sx={{
-        // size
-        height: 48,
+      h={48}
+      fullWidth
+      color={doesExceedTargetScore ? 'red' : undefined}
+      style={{
         position: 'relative',
         overflow: 'hidden',
-
         fontSize: '1rem',
-
-        // normal enabled state
-        background: doesExceedTargetScore ? '#ED6666' : '#0B6BCB',
-
-        // custom disabled style
-        '&.Mui-disabled': {
-          color: doesExceedTargetScore ? '#FFF' : '#00000042',
-          background: doesExceedTargetScore ? '#ED6666' : '#0000001F',
-        },
-
-        // progress bar layer
-        '&::before': {
-          content: '""',
+      }}
+    >
+      <div
+        style={{
           position: 'absolute',
           top: 0,
           left: 0,
           height: '100%',
-          width: `${(Math.min(scoreSum, 28) / 28) * 100}%`, // progress %
-          background: '#FFFFFF40',
+          width: `${(Math.min(scoreSum, 28) / 28) * 100}%`,
+          background: 'rgba(255,255,255,0.25)',
           transition: 'width 0.3s ease',
           pointerEvents: 'none',
-        },
-      }}
-    >
-      {buttonLabel}
+        }}
+      />
+      <span style={{ position: 'relative', zIndex: 1, color: '#fff' }}>{buttonLabel}</span>
     </Button>
   );
 
@@ -185,160 +171,112 @@ const AddScore = ({
       actions={SubmitButton}
     >
       <form id='add-score-form' onSubmit={handleSubmit}>
-        <Typography ml={0.5} mb={0.5}>
+        <Text size='sm' fw={500} ml={4} mb={4}>
           {t('competition')}
-        </Typography>
-        <Stack direction='column' spacing={2}>
+        </Text>
+        <Stack gap='md'>
           <Select
             name='competition'
-            defaultValue={selectedCompetition}
-            onChange={handleCompetitionChange}
+            data={competitionData}
+            defaultValue={selectedCompetition ? String(selectedCompetition) : undefined}
             placeholder={t('selectCompetition')}
-            startDecorator={
-              <EmojiEventsIcon color='primary' sx={{ marginRight: 0.5 }} />
-            }
-          >
-            {competitions?.map((competition: Competition) => (
-              <Option key={competition.id} value={competition.id}>
-                {competition.name}
-              </Option>
-            ))}
-          </Select>
-          <FormControl>
-            <Typography ml={0.5} mb={0.5}>
+            leftSection={<IconTrophy size={18} />}
+          />
+          <div>
+            <Text size='sm' fw={500} ml={4} mb={4}>
               {t('archer')}
-            </Typography>
-            <Autocomplete
+            </Text>
+            <Select
               name='archer'
-              options={archers ?? []}
+              data={archerData}
               placeholder={t('archerSearch')}
-              onChange={(
-                _event: SyntheticEvent<Element, Event>,
-                value: Archer | null
-              ): void => {
-                setSelectedArcher(value);
+              searchable
+              nothingFoundMessage={t('archerSelectNoOptions')}
+              leftSection={<IconSearch size={18} />}
+              onChange={(value) => {
+                const archer =
+                  archers?.find((a: Archer) => a.id === Number(value)) ?? null;
+                setSelectedArcher(archer);
               }}
-              getOptionLabel={(option: Archer) =>
-                `${option.first_name} ${option.last_name} (${option.club})`
-              }
-              getOptionDisabled={(archer: Archer) =>
-                scoreKeys.some(
-                  (key) => archer[`score${key}` as ScoreKey] !== null
-                )
-              }
-              noOptionsText={t('archerSelectNoOptions')}
-              startDecorator={
-                <SearchIcon color='primary' sx={{ marginRight: 0.5 }} />
-              }
             />
-          </FormControl>
-          <Divider>{t('scores')}</Divider>
-          <Stack direction='column' spacing={2} mt={5} mb={2}>
-            <Stack direction='row' spacing={2}>
+          </div>
+          <Divider label={t('scores')} labelPosition='center' />
+          <Stack gap='md'>
+            <Group grow gap='sm'>
               <ScoreInput
-                id='archer-score-20'
-                name='score-20'
-                type='number'
                 placeholder={`${t('score')} 20`}
                 value={scores.score20 ?? ''}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setScores({ ...scores, score20: Number(e.target.value) })
+                onChange={(val) =>
+                  setScores({ ...scores, score20: Number(val) })
                 }
               />
               <ScoreInput
-                id='archer-score-18'
-                name='score-18'
-                type='number'
                 placeholder={`${t('score')} 18`}
                 value={scores.score18 ?? ''}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setScores({ ...scores, score18: Number(e.target.value) })
+                onChange={(val) =>
+                  setScores({ ...scores, score18: Number(val) })
                 }
               />
               <ScoreInput
-                id='archer-score-16'
-                name='score-16'
-                type='number'
                 placeholder={`${t('score')} 16`}
                 value={scores.score16 ?? ''}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setScores({ ...scores, score16: Number(e.target.value) })
+                onChange={(val) =>
+                  setScores({ ...scores, score16: Number(val) })
                 }
               />
-            </Stack>
-            <Stack direction='row' spacing={2}>
+            </Group>
+            <Group grow gap='sm'>
               <ScoreInput
-                id='archer-score-14'
-                name='score-14'
-                type='number'
                 placeholder={`${t('score')} 14`}
                 value={scores.score14 ?? ''}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setScores({ ...scores, score14: Number(e.target.value) })
+                onChange={(val) =>
+                  setScores({ ...scores, score14: Number(val) })
                 }
               />
               <ScoreInput
-                id='archer-score-12'
-                name='score-12'
-                type='number'
                 placeholder={`${t('score')} 12`}
                 value={scores.score12 ?? ''}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setScores({ ...scores, score12: Number(e.target.value) })
+                onChange={(val) =>
+                  setScores({ ...scores, score12: Number(val) })
                 }
               />
               <ScoreInput
-                id='archer-score-10'
-                name='score-10'
-                type='number'
                 placeholder={`${t('score')} 10`}
                 value={scores.score10 ?? ''}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setScores({ ...scores, score10: Number(e.target.value) })
+                onChange={(val) =>
+                  setScores({ ...scores, score10: Number(val) })
                 }
               />
-            </Stack>
-            <Stack direction='row' spacing={2}>
+            </Group>
+            <Group grow gap='sm'>
               <ScoreInput
-                id='archer-score-8'
-                name='score-8'
-                type='number'
                 placeholder={`${t('score')} 8`}
                 value={scores.score8 ?? ''}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setScores({ ...scores, score8: Number(e.target.value) })
+                onChange={(val) =>
+                  setScores({ ...scores, score8: Number(val) })
                 }
               />
               <ScoreInput
-                id='archer-score-6'
-                name='score-6'
-                type='number'
                 placeholder={`${t('score')} 6`}
                 value={scores.score6 ?? ''}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setScores({ ...scores, score6: Number(e.target.value) })
+                onChange={(val) =>
+                  setScores({ ...scores, score6: Number(val) })
                 }
               />
               <ScoreInput
-                id='archer-score-4'
-                name='score-4'
-                type='number'
                 placeholder={`${t('score')} 4`}
                 value={scores.score4 ?? ''}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setScores({ ...scores, score4: Number(e.target.value) })
+                onChange={(val) =>
+                  setScores({ ...scores, score4: Number(val) })
                 }
               />
-            </Stack>
-            <Stack direction='row' alignSelf='center' width='30%'>
+            </Group>
+            <Stack align='center'>
               <ScoreInput
-                id='archer-score-0'
-                name='score-0'
-                type='number'
                 placeholder={`${t('score')} 0`}
                 value={scores.score0 ?? ''}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setScores({ ...scores, score0: Number(e.target.value) })
+                onChange={(val) =>
+                  setScores({ ...scores, score0: Number(val) })
                 }
               />
             </Stack>

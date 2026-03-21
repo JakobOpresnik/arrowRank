@@ -1,7 +1,6 @@
 import { useMemo, useState, type ChangeEvent } from 'react';
-import { Button, Input, Stack, Tooltip, Typography } from '@mui/joy';
-import AttachFileIcon from '@mui/icons-material/AttachFile';
-import ClearIcon from '@mui/icons-material/Clear';
+import { Button, Stack, Text, Tooltip, ActionIcon, Group } from '@mantine/core';
+import { IconPaperclip, IconX } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { useArchersUpload } from '../hooks/useArchersUpload';
 import { useLanguageStore } from '../stores/useLanguageStore';
@@ -9,7 +8,6 @@ import { UploadArchersProps, ArchersUploadProps } from '../types';
 
 const UploadArchers = ({ competitionId, onDone }: UploadArchersProps) => {
   const { t } = useTranslation();
-
   const { language } = useLanguageStore();
 
   const [file, setFile] = useState<File | null>(null);
@@ -29,7 +27,10 @@ const UploadArchers = ({ competitionId, onDone }: UploadArchersProps) => {
   const handleSubmit = (uploadData: ArchersUploadProps): void => {
     if (!file || competitionId === null) return;
     uploadArchers(uploadData, {
-      onError: (err: Error) => { console.error(err); alert(`Upload error: ${err.message}`); },
+      onError: (err: Error) => {
+        console.error(err);
+        alert(`Upload error: ${err.message}`);
+      },
       onSuccess: () => {
         onDone();
       },
@@ -45,41 +46,35 @@ const UploadArchers = ({ competitionId, onDone }: UploadArchersProps) => {
   };
 
   return (
-    <Stack direction='column' gap={1}>
-      <Typography>{t('uploadArchersFile')}</Typography>
-      <Input
+    <Stack gap='sm'>
+      <Text>{t('uploadArchersFile')}</Text>
+      <input
         id='archers-file-upload'
         name='file-upload'
         type='file'
         title={t('uploadArchersFileTooltip')}
-        sx={{ display: 'none', padding: 1 }}
+        style={{ display: 'none' }}
         onChange={handleFileChange}
-        required
-        startDecorator={<AttachFileIcon color='primary' />}
       />
-      <Stack direction='row' spacing={2}>
-        {/* bind the button below to the file input field */}
+      <Group gap='sm'>
         <label htmlFor='archers-file-upload'>
-          <Button component='span' variant='solid'>
+          <Button component='span' leftSection={<IconPaperclip size={18} />}>
             {t('chooseFile')}
           </Button>
         </label>
-        <Tooltip title={t('clearSelectedFile')} placement='right' arrow>
-          <Button
-            sx={{
-              backgroundColor: '#F55656',
-              '&:hover': {
-                backgroundColor: '#F54242',
-              },
-            }}
+        <Tooltip label={t('clearSelectedFile')} position='right' withArrow>
+          <ActionIcon
+            variant='filled'
+            style={{ backgroundColor: '#F55656', color: '#fff' }}
+            size='lg'
             onClick={handleClearFile}
             disabled={!file}
           >
-            <ClearIcon />
-          </Button>
+            <IconX size={18} />
+          </ActionIcon>
         </Tooltip>
-      </Stack>
-      <Typography ml={0.5}>
+      </Group>
+      <Text size='sm' ml={4}>
         {file ? (
           <>
             {t('selectedFileLabel')}: <b>{file.name}</b>
@@ -87,11 +82,10 @@ const UploadArchers = ({ competitionId, onDone }: UploadArchersProps) => {
         ) : (
           t('noFileSelected')
         )}
-      </Typography>
+      </Text>
       <Button
-        type='submit'
         disabled={isSubmitDisabled}
-        sx={{ marginTop: 1 }}
+        mt='xs'
         onClick={() =>
           handleSubmit({ file, competitionId: competitionId ?? 0, language })
         }

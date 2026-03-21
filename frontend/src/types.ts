@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { SUPPORTED_LANGUAGES } from './constants';
-import { SxProps } from '@mui/joy/styles/types';
 
 export interface Archer {
   id: number;
@@ -164,7 +163,6 @@ export interface ModalWrapperProps {
   children: ReactNode;
   actions?: ReactNode;
   maxWidth?: number;
-  sx?: SxProps;
 }
 
 export type OnCloseReason = 'backdropClick' | 'escapeKeyDown' | 'closeClick';
