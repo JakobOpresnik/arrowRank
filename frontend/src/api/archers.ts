@@ -7,7 +7,7 @@ import {
 } from '../types';
 
 export const uploadArchers = async (
-  uploadData: ArchersUploadProps
+  uploadData: ArchersUploadProps,
 ): Promise<void> => {
   if (!uploadData.file) return;
   const formData = new FormData();
@@ -15,21 +15,28 @@ export const uploadArchers = async (
   formData.append('competition_id', `${uploadData.competitionId}`);
   formData.append('language', uploadData.language);
 
-  console.log('upload lang:', uploadData.language);
-
   const res: Response = await fetch(`${BE_BASE_URL}/archers/upload`, {
     method: 'POST',
     body: formData,
   });
   if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(errorData.message || 'Upload failed');
+    let message = `Upload failed (HTTP ${res.status})`;
+    try {
+      const errorData = await res.json();
+      const detail = Array.isArray(errorData.detail)
+        ? errorData.detail.map((e: { loc: string[]; msg: string }) => `${e.loc.join('.')}: ${e.msg}`).join('; ')
+        : errorData.detail;
+      message = detail || errorData.message || message;
+    } catch {
+      /* response was not JSON */
+    }
+    throw new Error(message);
   }
 };
 
 export const fetchArcher = async (
   competitionId: number,
-  archerId: number | null
+  archerId: number | null,
 ): Promise<Archer> => {
   if (!archerId) throw new Error('No archer ID provided');
 
@@ -40,7 +47,7 @@ export const fetchArcher = async (
       headers: {
         'Content-Type': 'application/json',
       },
-    }
+    },
   );
   if (!res.ok) throw new Error('Failed to fetch archer');
 
@@ -49,7 +56,7 @@ export const fetchArcher = async (
 };
 
 export const fetchArchers = async (
-  competitionId: number
+  competitionId: number,
   // excludeScores: boolean = false
 ): Promise<Archer[]> => {
   const res: Response = await fetch(`${BE_BASE_URL}/archers/${competitionId}`, {
@@ -70,7 +77,7 @@ export const fetchArchersFiltered = async (
   bowCategory?: string,
   gender?: string,
   ageGroup?: string,
-  sort?: 'asc' | 'desc'
+  sort?: 'asc' | 'desc',
 ): Promise<Archer[]> => {
   const params = new URLSearchParams();
   if (club) params.append('club', club);
@@ -86,7 +93,7 @@ export const fetchArchersFiltered = async (
       headers: {
         'Content-Type': 'application/json',
       },
-    }
+    },
   );
   if (!res.ok) throw new Error('Failed to fetch filtered archers');
 
@@ -95,7 +102,7 @@ export const fetchArchersFiltered = async (
 };
 
 export const updateArcherScore = async (
-  update: ArcherUpdate
+  update: ArcherUpdate,
 ): Promise<void> => {
   const res: Response = await fetch(`${BE_BASE_URL}/archers/score`, {
     method: 'POST',
@@ -118,7 +125,7 @@ export const clearArcherScore = async (archerId: number): Promise<void> => {
       headers: {
         'Content-Type': 'application/json',
       },
-    }
+    },
   );
   if (!res.ok) {
     const errorData = await res.json();
@@ -127,7 +134,7 @@ export const clearArcherScore = async (archerId: number): Promise<void> => {
 };
 
 export const clearArcherScores = async (
-  competitionId: number
+  competitionId: number,
 ): Promise<void> => {
   const res: Response = await fetch(
     `${BE_BASE_URL}/archers/clear_scores/${competitionId}`,
@@ -136,7 +143,7 @@ export const clearArcherScores = async (
       headers: {
         'Content-Type': 'application/json',
       },
-    }
+    },
   );
   if (!res.ok) {
     const errorData = await res.json();
@@ -165,7 +172,15 @@ export const createArcher = async (data: ArcherCreate): Promise<void> => {
   });
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.message || 'Failed to create archer');
+    const detail = Array.isArray(errorData.detail)
+      ? errorData.detail
+          .map(
+            (e: { loc: string[]; msg: string }) =>
+              `${e.loc.join('.')}: ${e.msg}`,
+          )
+          .join('; ')
+      : errorData.detail;
+    throw new Error(detail || errorData.message || 'Failed to create archer');
   }
 };
 

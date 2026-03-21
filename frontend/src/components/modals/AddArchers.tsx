@@ -95,21 +95,20 @@ const AddArchers = ({ open, onClose }: AddArchersProps) => {
           ageGroup === 'Adults' ? ageGroup.toLowerCase() : ageGroup ?? '',
       },
       {
-        onError: (err: Error) => console.error(err),
+        onError: (err: Error) => { console.error(err); alert(`Error: ${err.message}`); },
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ['archersFiltered'] });
+          setFirstName(null);
+          setLastName(null);
+          setEmail(null);
+          setClub(null);
+          setCategory(null);
+          setAgeGroup(null);
+          setGender(null);
           onClose();
         },
       }
     );
-    setFirstName(null);
-    setLastName(null);
-    setEmail(null);
-    setClub(null);
-    setCategory(null);
-    setAgeGroup(null);
-    setGender(null);
-    onClose();
   };
 
   const isGenderSelectDisabled: boolean = useMemo(
