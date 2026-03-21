@@ -3,14 +3,11 @@ import re
 import uuid
 from typing import Optional
 from fastapi import FastAPI, UploadFile
-from fastapi.staticfiles import StaticFiles
 from constants import UPLOAD_DIR
 
 def setup_storage(app: FastAPI):
     # ensure upload logo directory exists
     os.makedirs(UPLOAD_DIR, exist_ok=True)
-    # mount static files folder
-    app.mount("/logos", StaticFiles(directory=UPLOAD_DIR), name="logos")
 
 
 def sanitize_string(name: str) -> str:

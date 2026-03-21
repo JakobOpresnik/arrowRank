@@ -1,15 +1,26 @@
 from csv import DictReader
 import os
+import sys
+import traceback
 import uvicorn
 
+# Force UTF-8 on stdout/stderr so print() doesn't crash on Slovenian/Croatian
+# characters (č, š, ž, …) when running as a PyInstaller exe on Windows,
+# where the default codepage is cp1252.
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace') # type: ignore
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace') # type: ignore
+
 from fastapi import FastAPI, HTTPException, Depends, Query, UploadFile, File, Form
-from sqlalchemy import desc, asc, func
+from fastapi.responses import FileResponse
+from sqlalchemy import desc, asc, func, text
 from sqlalchemy.orm import Session
 from typing import Optional, List, Dict
 
 from models import AgeGroup, Category, Gender, Base, Archer, Competition
 from schemas import ArcherCreate, ArcherOut, ArcherScoreUpdate, CompetitionOut
-from constants import DATABASE_URL
+from constants import DATABASE_URL, UPLOAD_DIR
 from database import SessionLocal, engine
 from middleware import setup_cors
 from storage import save_uploaded_file, setup_storage
@@ -28,6 +39,25 @@ setup_cors(app)
 setup_storage(app)
 
 
+@app.get("/logos/{filename}")
+def get_logo(filename: str):
+    file_path = os.path.join(UPLOAD_DIR, filename)
+    if not os.path.isfile(file_path):
+        raise HTTPException(status_code=404, detail="Logo not found")
+    return FileResponse(file_path, headers={"Access-Control-Allow-Origin": "*"})
+
+
+@app.get("/logos/{filename}/base64")
+def get_logo_base64(filename: str):
+    import base64 as b64mod
+    file_path = os.path.join(UPLOAD_DIR, filename)
+    if not os.path.isfile(file_path):
+        raise HTTPException(status_code=404, detail="Logo not found")
+    with open(file_path, "rb") as f:
+        content = f.read()
+    return {"data": b64mod.b64encode(content).decode()}
+
+
 def get_db():
     db = SessionLocal()
     try:
@@ -43,12 +73,98 @@ def get_db():
 # ----------------------------
 # Populate DB on startup
 # ----------------------------
+def migrate_age_groups() -> None:
+    """Migrate archers table if it still has old U10/U15 age group CHECK constraint."""
+    with engine.connect() as conn:
+        result = conn.execute(text(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name='archers'"
+        ))
+        row = result.fetchone()
+        if row is None:
+            return  # table doesn't exist yet, no migration needed
+        table_sql: str = row[0] or ""
+        if "U10" not in table_sql and "U15" not in table_sql:
+            return  # already up to date
+
+        print("Migrating archers table: updating U10/U15 to U11/U16...")
+        conn.execute(text("ALTER TABLE archers RENAME TO archers_migration_backup"))
+        conn.commit()
+
+    Base.metadata.tables["archers"].create(bind=engine)
+
+    with engine.connect() as conn:
+        conn.execute(text("""
+            INSERT INTO archers (
+                id, first_name, last_name, email, club,
+                score20, score18, score16, score14, score12,
+                score10, score8, score6, score4, score0,
+                category, gender, age_group, competition_id
+            )
+            SELECT
+                id, first_name, last_name, email, club,
+                score20, score18, score16, score14, score12,
+                score10, score8, score6, score4, score0,
+                category, gender,
+                CASE age_group
+                    WHEN 'U10' THEN 'U11'
+                    WHEN 'U15' THEN 'U16'
+                    ELSE age_group
+                END,
+                competition_id
+            FROM archers_migration_backup
+        """))
+        conn.execute(text("DROP TABLE archers_migration_backup"))
+        conn.commit()
+    print("Migration complete.")
+
+
+def migrate_gender_enum() -> None:
+    """Migrate archers table if gender CHECK constraint is missing 'mixed'."""
+    with engine.connect() as conn:
+        result = conn.execute(text(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name='archers'"
+        ))
+        row = result.fetchone()
+        if row is None:
+            return
+        table_sql: str = row[0] or ""
+        # No migration needed if 'mixed' is already present (or no CHECK constraint at all)
+        if "mixed" in table_sql or "CHECK" not in table_sql:
+            return
+
+        print("Migrating archers table: updating gender CHECK constraint to include 'mixed'...")
+        conn.execute(text("ALTER TABLE archers RENAME TO archers_gender_backup"))
+        conn.commit()
+
+    Base.metadata.tables["archers"].create(bind=engine)
+
+    with engine.connect() as conn:
+        conn.execute(text("""
+            INSERT INTO archers (
+                id, first_name, last_name, email, club,
+                score20, score18, score16, score14, score12,
+                score10, score8, score6, score4, score0,
+                category, gender, age_group, competition_id
+            )
+            SELECT
+                id, first_name, last_name, email, club,
+                score20, score18, score16, score14, score12,
+                score10, score8, score6, score4, score0,
+                category, gender, age_group, competition_id
+            FROM archers_gender_backup
+        """))
+        conn.execute(text("DROP TABLE archers_gender_backup"))
+        conn.commit()
+    print("Gender enum migration complete.")
+
+
 @app.on_event("startup")
 def startup_event() -> None:
     print("Using database:", DATABASE_URL)
     print("Creating tables if they do not yet exist...")
     Base.metadata.create_all(bind=engine)
-    return
+    migrate_age_groups()    # migrate old U10/U15 age groups to U11/U16 if needed
+    migrate_gender_enum()   # migrate old gender CHECK constraint to include 'mixed'
 
 
 @app.get("/health")
@@ -63,64 +179,85 @@ def health():
 def upload_data_into_db(
     file: UploadFile = File(...),
     competition_id: int = Form(...),
+    language: Optional[str] = Form(None),  # declared so FastAPI doesn't choke on it
     db: Session = Depends(get_db)
 ) -> None:
-    # check if competition exists
-    competition: Optional[Competition] = db.query(Competition).filter(Competition.id == competition_id).first()
-    
-    if competition is None:
-        raise HTTPException(status_code=404, detail="Competition not found")
+    try:
+        # check if competition exists
+        competition: Optional[Competition] = db.query(Competition).filter(Competition.id == competition_id).first()
+        if competition is None:
+            raise HTTPException(status_code=404, detail="Competition not found")
 
-    # read uploaded CSV file
-    content: List[str] = file.file.read().decode('utf-8').splitlines()
-    reader: DictReader[str] = DictReader(content)
+        # reset cursor — starlette may leave it at end after writing to SpooledTemporaryFile
+        file.file.seek(0)
 
-    for row in reader:
-        email: str = row.get("Email", "")
-        club: str = row.get("Klub", "")
+        # read uploaded CSV file; utf-8-sig strips BOM if present
+        raw: bytes = file.file.read()
+        try:
+            content_str: str = raw.decode('utf-8-sig')
+        except UnicodeDecodeError:
+            content_str = raw.decode('latin-1')
 
-        full_name: str = row.get("Ime in Priimek", "")
-        if " " in full_name:
-            first_name, last_name = full_name.split(' ', 1)
-        else:
-            first_name, last_name = full_name, ""
+        content: List[str] = content_str.splitlines()
+        reader: DictReader[str] = DictReader(content)
 
-        full_category: str = row.get("Slog", "")
-        category, gender, age_group = parse_category(full_category)
+        print("processing CSV rows...")
 
-        archer = Archer(
-            first_name=first_name,
-            last_name=last_name,
-            email=email,
-            club=club,
-            competition_id=competition_id,  # set foreign key
-            category=category,
-            gender=gender,
-            age_group=age_group,
-            score20=None,
-            score18=None,
-            score16=None,
-            score14=None,
-            score12=None,
-            score10=None,
-            score8=None,
-            score6=None,
-            score4=None,
-            score0=None,
-        )
+        for row in reader:
+            email: str = row.get("Email", "")
+            club: str = row.get("klub", "")
 
-        # avoid duplicates
-        exists: Optional[Archer] = db.query(Archer).filter(
-            Archer.first_name == first_name,
-            Archer.last_name == last_name
-        ).first()
+            full_name: str = row.get("ime in priimek", "")
+            if " " in full_name:
+                first_name, last_name = full_name.split(' ', 1)
+            else:
+                first_name, last_name = full_name, ""
 
-        if exists is None:
-            db.add(archer)
-    
-    db.commit()
-    db.close()
-    print("Archers loaded from CSV into DB")
+            print("full name: ", full_name)
+
+            full_category: str = row.get("slog", "")
+            category, gender, age_group = parse_category(full_category)
+
+            print(f"Parsed archer: {first_name} {last_name}, email: {email}, club: {club}, category: {category}, gender: {gender}, age group: {age_group}")
+
+            # avoid duplicates
+            exists: Optional[Archer] = db.query(Archer).filter(
+                Archer.first_name == first_name,
+                Archer.last_name == last_name
+            ).first()
+
+            if exists is None:
+                archer = Archer(
+                    first_name=first_name,
+                    last_name=last_name,
+                    email=email,
+                    club=club,
+                    competition_id=competition_id,
+                    category=category,
+                    gender=gender,
+                    age_group=age_group,
+                    score20=None,
+                    score18=None,
+                    score16=None,
+                    score14=None,
+                    score12=None,
+                    score10=None,
+                    score8=None,
+                    score6=None,
+                    score4=None,
+                    score0=None,
+                )
+                db.add(archer)
+
+        db.commit()
+        print("Archers loaded from CSV into DB")
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        tb: str = traceback.format_exc()
+        print(f"ERROR in /archers/upload:\n{tb}")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)}\n\n{tb}")
 
 
 @app.post("/archers/score", response_model=ArcherOut)
@@ -128,10 +265,9 @@ def update_archer_score(
     update: ArcherScoreUpdate,
     db: Session = Depends(get_db)
 ) -> ArcherOut:
-    # find correct archer
+    # find correct archer by id
     archer: Optional[Archer] = db.query(Archer).filter(
-        Archer.first_name == update.first_name,
-        Archer.last_name == update.last_name
+        Archer.id == update.id
     ).first()
 
     if not archer:
@@ -278,7 +414,7 @@ def get_archers_filtered(
     bow_category: Optional[Category] = Query(None), # optional query parameter
     gender: Optional[Gender] = Query(None),         # optional query parameter
     age_group: Optional[AgeGroup] = Query(None),    # optional query parameter
-    sort: Optional[str] = Query(None, regex="^(asc|desc)$"),
+    sort: Optional[str] = Query(None, pattern="^(asc|desc)$"),
     db: Session = Depends(get_db)
 ) -> List[Archer]:
     try:

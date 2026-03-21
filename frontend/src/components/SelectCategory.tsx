@@ -17,7 +17,7 @@ const SelectCategory = ({
 
   const handleCategoryFiltering = (
     _event: SyntheticEvent | null,
-    value: string | number | null
+    value: string | number | null,
   ): void => {
     onChange(value as string);
     queryClient.invalidateQueries({
@@ -40,7 +40,6 @@ const SelectCategory = ({
       onChange={handleCategoryFiltering}
     >
       {BOW_CATEGORIES.map((category: string) => {
-        console.log(category);
         const translationKey = `tableCategory${category.replace(/\s+/g, '')}`;
         return (
           <Option

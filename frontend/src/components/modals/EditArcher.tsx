@@ -290,15 +290,9 @@ const EditArcher = ({
                   if (archerToEdit) {
                     archerToEdit.category = newValue as string;
                   }
-                  // auto set gender to mixed for primitive bow and guest
                   setShouldDisableGenderSelect(
-                    archerToEdit?.age_group === 'U10'
+                    archerToEdit?.age_group === 'U11'
                   );
-                  if (newValue === 'primitive bow' || newValue === 'guest') {
-                    setGenderChange(true);
-                    setShouldDisableGenderSelect(true);
-                    archerToEdit.gender = 'mixed';
-                  }
                 }}
                 startDecorator={
                   <CategoryIcon color='primary' sx={{ marginRight: 0.5 }} />
@@ -337,12 +331,9 @@ const EditArcher = ({
                     archerToEdit.age_group =
                       newValue !== 'Adults' ? (newValue as string) : 'adults';
                   }
-                  // auto set gender to mixed for U10
-                  setShouldDisableGenderSelect(
-                    archerToEdit?.category === 'primitive bow' ||
-                      archerToEdit?.category === 'guest'
-                  );
-                  if (newValue === 'U10') {
+                  // auto set gender to mixed for U11
+                  setShouldDisableGenderSelect(false);
+                  if (newValue === 'U11') {
                     setGenderChange(true);
                     setShouldDisableGenderSelect(true);
                     archerToEdit.gender = 'mixed';

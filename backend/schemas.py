@@ -26,6 +26,7 @@ class ArcherCreate(BaseModel):
     score0:  Optional[int] = None
 
 class ArcherScoreUpdate(BaseModel):
+    id: int
     first_name: str
     last_name: str
     club: str

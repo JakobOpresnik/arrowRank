@@ -29,7 +29,7 @@ const UploadArchers = ({ competitionId, onDone }: UploadArchersProps) => {
   const handleSubmit = (uploadData: ArchersUploadProps): void => {
     if (!file || competitionId === null) return;
     uploadArchers(uploadData, {
-      onError: (err: Error) => console.error(err),
+      onError: (err: Error) => { console.error(err); alert(`Upload error: ${err.message}`); },
       onSuccess: () => {
         onDone();
       },

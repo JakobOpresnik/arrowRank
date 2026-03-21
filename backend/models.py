@@ -4,7 +4,7 @@ from enum import Enum
 
 Base = declarative_base()
 
-class Category(Enum):
+class Category(str, Enum):
     BAREBOW = 'barebow'
     LONG_BOW = 'long bow'
     TRADITIONAL_BOW = 'traditional bow'
@@ -12,15 +12,15 @@ class Category(Enum):
     GUEST = 'guest'
 
 
-class Gender(Enum):
+class Gender(str, Enum):
     MALE = 'male'
     FEMALE = 'female'
     MIXED = 'mixed'
 
 
-class AgeGroup(Enum):
-    U10 = 'U10'
-    U15 = 'U15'
+class AgeGroup(str, Enum):
+    U11 = 'U11'
+    U16 = 'U16'
     ADULTS = 'adults'
 
 
@@ -44,9 +44,9 @@ class Archer(Base):
     score4  = Column(Integer, nullable=True)
     score0  = Column(Integer, nullable=True)
 
-    category = Column(SQLEnum(Category), nullable=False)
-    gender = Column(SQLEnum(Gender), nullable=False)
-    age_group = Column(SQLEnum(AgeGroup), nullable=False)
+    category = Column(SQLEnum(Category, create_constraint=False), nullable=False)
+    gender = Column(SQLEnum(Gender, create_constraint=False), nullable=False)
+    age_group = Column(SQLEnum(AgeGroup, create_constraint=False), nullable=False)
 
     # competition = Column(String, nullable=False)
     competition_id = Column(Integer, ForeignKey("competitions.id"))     # foreign key to Competition

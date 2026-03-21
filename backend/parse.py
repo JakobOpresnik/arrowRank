@@ -18,10 +18,8 @@ def parse_category(category_value: str):
         category = Category.TRADITIONAL_BOW
     if "primitivni" in category_value:
         category = Category.PRIMITIVE_BOW
-        gender = Gender.MIXED
     if "gosti" in category_value:
         category = Category.GUEST
-        gender = Gender.MIXED
     
     # parse gender
     if "ženske" in category_value or "zenske" in category_value or "punce" in category_value:
@@ -30,10 +28,10 @@ def parse_category(category_value: str):
         gender = Gender.MALE
     
     # parse age group
-    if "u10" in category_value:
-        age_group = AgeGroup.U10
+    if "u11" in category_value:
+        age_group = AgeGroup.U11
         gender = Gender.MIXED
-    if "u15" in category_value:
-        age_group = AgeGroup.U15
+    if "u16" in category_value:
+        age_group = AgeGroup.U16
     
     return category, gender, age_group

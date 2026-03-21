@@ -13,6 +13,9 @@ node_modules
 *.db
 /backend/*.db
 
+# SQLite CLI binary
+*.exe
+
 /backend/build/
 /backend/dist/
 
@@ -20,3 +23,20 @@ node_modules
 /electron/dist/
 
 .venv
+
+# TypeScript build cache
+frontend/tsconfig.tsbuildinfo
+
+# Git Bash crash dumps
+*.stackdump
+
+# Personal dev notes
+todos.txt
+improved_be_architecture.txt
+
+# Competition data files (Excel exports, CSV archer lists)
+/data/
+/results/
+
+# Uploaded competition logos (runtime-generated)
+/backend/uploaded_logos/

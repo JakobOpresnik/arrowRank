@@ -21,7 +21,6 @@ export const ModalWrapper = ({
   return (
     <Modal
       open={open}
-      disableEscapeKeyDown
       onClose={(_, reason: OnCloseReason) => {
         if (reason === 'backdropClick') return;
         onClose();

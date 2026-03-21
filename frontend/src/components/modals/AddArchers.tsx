@@ -72,7 +72,7 @@ const AddArchers = ({ open, onClose }: AddArchersProps) => {
     () =>
       !!firstName &&
       !!lastName &&
-      !!club &&
+      !!club && club.length >= 3 &&
       !!selectedCompetition &&
       !!category &&
       !!gender &&
@@ -95,29 +95,25 @@ const AddArchers = ({ open, onClose }: AddArchersProps) => {
           ageGroup === 'Adults' ? ageGroup.toLowerCase() : ageGroup ?? '',
       },
       {
-        onError: (err: Error) => console.error(err),
+        onError: (err: Error) => { console.error(err); alert(`Error: ${err.message}`); },
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ['archersFiltered'] });
+          setFirstName(null);
+          setLastName(null);
+          setEmail(null);
+          setClub(null);
+          setCategory(null);
+          setAgeGroup(null);
+          setGender(null);
           onClose();
         },
       }
     );
-    setFirstName(null);
-    setLastName(null);
-    setEmail(null);
-    setClub(null);
-    setCategory(null);
-    setAgeGroup(null);
-    setGender(null);
-    onClose();
   };
 
   const isGenderSelectDisabled: boolean = useMemo(
-    () =>
-      ageGroup === 'U10' ||
-      category === 'primitive bow' ||
-      category === 'guest',
-    [ageGroup, category]
+    () => ageGroup === 'U11',
+    [ageGroup]
   );
 
   return (
@@ -250,7 +246,7 @@ const AddArchers = ({ open, onClose }: AddArchersProps) => {
                     </FormControl>
                   </Stack>
                   <Stack direction='column' sx={{ width: '50%' }}>
-                    <FormControl>
+                    <FormControl required error={!!club && club.length < 3}>
                       <FormLabel>
                         <Typography ml={0.5}>{t('club')}</Typography>
                       </FormLabel>
@@ -309,13 +305,6 @@ const AddArchers = ({ open, onClose }: AddArchersProps) => {
                           newValue: string | null
                         ) => {
                           setCategory(newValue);
-                          // auto set gender to mixed for primitive bow and guest
-                          if (
-                            newValue === 'primitive bow' ||
-                            newValue === 'guest'
-                          ) {
-                            setGender('mixed');
-                          }
                         }}
                         startDecorator={
                           <CategoryIcon
@@ -357,8 +346,8 @@ const AddArchers = ({ open, onClose }: AddArchersProps) => {
                           newValue: string | null
                         ) => {
                           setAgeGroup(newValue);
-                          // auto set gender to mixed for U10
-                          if (newValue === 'U10') {
+                          // auto set gender to mixed for U11
+                          if (newValue === 'U11') {
                             setGender('mixed');
                           }
                         }}

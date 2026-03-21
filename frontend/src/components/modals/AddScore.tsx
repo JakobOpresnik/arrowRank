@@ -81,6 +81,7 @@ const AddScore = ({
     event.preventDefault();
     if (selectedCompetition && selectedArcher && scores) {
       onArcherUpdate({
+        id: selectedArcher.id,
         first_name: selectedArcher.first_name,
         last_name: selectedArcher.last_name,
         club: selectedArcher.club,

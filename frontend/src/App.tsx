@@ -300,7 +300,7 @@ function App() {
             {(archersDataExists || areAnyFiltersApplied) && (
               <Button
                 sx={{ paddingInline: 3, paddingBlock: 1.5 }}
-                onClick={() => exportTableToExcel(sortedArchers)}
+                onClick={() => exportTableToExcel(sortedArchers, selectedCompetition)}
               >
                 <SaveAltIcon sx={{ marginRight: 2 }} />
                 <Typography sx={{ color: '#FFF' }}>

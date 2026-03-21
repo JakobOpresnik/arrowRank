@@ -17,11 +17,18 @@ build and run your FE and BE to test if they function properly
 
 > cd /backend
 > pip install -r requirements-dev.txt
-> pyinstaller --onefile <main-file>.py --name backend
+> pyinstaller backend.spec
 
 this creates:
 - /frontend/dist/index.html
-- /backend/build/backend.exe
+- /backend/dist/backend.exe
+
+=======================================================================
+STEP 2.5: (CRITICAL - easy to forget)
+copy the freshly built backend.exe into the electron folder
+(this is what actually gets bundled into the installer)
+
+> cp /backend/dist/backend.exe /electron/backend/backend.exe
 
 =======================================================================
 STEP 3:
@@ -57,6 +64,8 @@ STEP 6:
 check if process is running at specified port
 
 > netstat -ano | findstr :<port>
+
+(port here should be 8000)
 
 =======================================================================
 STEP 7:

@@ -26,7 +26,7 @@ export interface Archer {
 export const scoreKeys = [20, 18, 16, 14, 12, 10, 8, 6, 4, 0] as const;
 export type ScoreKey = `score${(typeof scoreKeys)[number]}`;
 export type ArcherScores = Pick<Archer, ScoreKey>;
-export type ArcherUpdate = Pick<Archer, 'first_name' | 'last_name'> &
+export type ArcherUpdate = Pick<Archer, 'id' | 'first_name' | 'last_name'> &
   Partial<Pick<Archer, 'club' | 'category' | 'age_group' | 'gender'>> &
   ArcherScores;
 
@@ -37,6 +37,7 @@ export interface Competition {
   name: string;
   date: string; // ISO format date string
   location: string;
+  organizer?: string | null; // organizing club name, e.g. "Šentlok"
   logo_url?: string | null; // URL to the saved logo image
   logoFile?: File | null; // optional logo file when uploading
 }
