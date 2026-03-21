@@ -23,3 +23,10 @@ node_modules
 /electron/dist/
 
 .venv
+
+# Competition data files (Excel exports, CSV archer lists)
+/data/
+/results/
+
+# Uploaded competition logos (runtime-generated)
+/backend/uploaded_logos/
