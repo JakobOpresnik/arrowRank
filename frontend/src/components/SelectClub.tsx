@@ -1,5 +1,4 @@
-import { Select, Option } from '@mui/joy';
-import { type SyntheticEvent } from 'react';
+import { Select } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { queryClient } from '../lib/queryClient';
 import { SelectClubProps } from '../types';
@@ -12,29 +11,27 @@ const SelectClub = ({
 }: SelectClubProps) => {
   const { t } = useTranslation();
 
-  const handleClubFiltering = (
-    _event: SyntheticEvent | null,
-    value: string | number | null
-  ): void => {
-    onChange(value as string);
-    queryClient.invalidateQueries({
-      queryKey: ['archersFiltered', competitionId, value as string],
-    });
-  };
+  const data = clubs.map((club: string) => ({
+    value: club === 'All' ? '' : club,
+    label: club === 'All' ? t('all') : club,
+  }));
+
   return (
     <Select
       name='club'
-      variant='plain'
-      sx={{ backgroundColor: '#9CC1FF' }}
+      size='xs'
+      data={data}
       value={selectedClub}
-      onChange={handleClubFiltering}
-    >
-      {clubs.map((club: string) => (
-        <Option key={club} value={club === 'All' ? '' : club}>
-          {club === 'All' ? t('all') : club}
-        </Option>
-      ))}
-    </Select>
+      onChange={(value) => {
+        onChange(value ?? '');
+        queryClient.invalidateQueries({
+          queryKey: ['archersFiltered', competitionId, value],
+        });
+      }}
+      styles={{
+        input: { backgroundColor: 'var(--mantine-color-brand-8)', color: '#f0f0f0', borderColor: 'var(--mantine-color-brand-7)' },
+      }}
+    />
   );
 };
 

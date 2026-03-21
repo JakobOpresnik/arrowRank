@@ -1,5 +1,4 @@
-import { Select, Option, Typography, type SelectOption } from '@mui/joy';
-import { type SyntheticEvent, useEffect } from 'react';
+import { Select } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { useCompetitions } from '../hooks/useCompetitions';
 import { Competition, SelectCompetitionProps } from '../types';
@@ -8,78 +7,41 @@ import { useCompetitionStore } from '../stores/useCompetitionStore';
 const SelectCompetition = ({ onSelect }: SelectCompetitionProps) => {
   const { t } = useTranslation();
   const { data: competitions } = useCompetitions();
-  const { selectedCompetition, setSelectedCompetition, deselectCompetition } =
+  const { selectedCompetition, setSelectedCompetition } =
     useCompetitionStore();
 
-  const SelectedOption = (option: SelectOption<number> | null) => {
-    const selectedId = option?.value as number;
-    const item: Competition | undefined = competitions?.find(
-      (c) => c.id === selectedId
-    );
-    const label: string = item?.name ?? '';
-    return (
-      <Typography
-        title={label} // shows full value on hover
-        noWrap
-        sx={{
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-          maxWidth: '100%',
-          display: 'block',
-        }}
-      >
-        {label}
-      </Typography>
-    );
-  };
-
-  const handleCompetitionChange = (
-    _event: SyntheticEvent | null,
-    value: number | null
-  ): void => {
-    if (competitions) {
-      const competition: Competition | null =
-        competitions.find((comp: Competition) => comp.id === value) || null;
-      setSelectedCompetition(competition);
-      onSelect?.();
-    }
-  };
-
-  /* useEffect(() => {
-    deselectCompetition(selectedCompetition?.id || 0);
-  }, [selectedCompetition, deselectCompetition]); */
+  const data =
+    competitions && competitions.length > 0
+      ? competitions.map((c: Competition) => ({
+          value: String(c.id),
+          label: c.name,
+        }))
+      : [{ value: '', label: t('noCompetitionsAvailable'), disabled: true }];
 
   return (
     <Select
       name='competition'
-      onChange={handleCompetitionChange}
-      value={selectedCompetition?.id ?? null}
       placeholder={t('selectCompetition')}
-      sx={{ width: 250 }}
-      renderValue={SelectedOption}
-      slotProps={{
-        listbox: {
-          sx: {
-            maxWidth: 300, // or whatever you want
-            overflowX: 'auto',
-            whiteSpace: 'nowrap',
-          },
+      data={data}
+      value={selectedCompetition ? String(selectedCompetition.id) : null}
+      onChange={(value) => {
+        if (competitions && value) {
+          const competition =
+            competitions.find((c: Competition) => c.id === Number(value)) ??
+            null;
+          setSelectedCompetition(competition);
+          onSelect?.();
+        }
+      }}
+      w={250}
+      styles={{
+        input: {
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
         },
       }}
-    >
-      {competitions && competitions.length > 0 ? (
-        competitions.map((competition: Competition) => (
-          <Option key={competition.id} value={competition.id}>
-            {competition.name}
-          </Option>
-        ))
-      ) : (
-        <Option value='' disabled>
-          {t('noCompetitionsAvailable')}
-        </Option>
-      )}
-    </Select>
+    />
   );
 };
 

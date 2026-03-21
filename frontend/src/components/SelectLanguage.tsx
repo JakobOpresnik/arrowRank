@@ -1,44 +1,53 @@
-import { Avatar, Option, Select, Tooltip } from '@mui/joy';
+import { Select, Tooltip, Avatar, Group, Text } from '@mantine/core';
 import { t } from 'i18next';
 import { SUPPORTED_LANGUAGES, LANGUAGE_FLAGS } from '../constants';
 import { SelectLanguageProps, Language } from '../types';
+import type { ReactNode } from 'react';
 
 const SelectLanguage = ({ language, setLanguage }: SelectLanguageProps) => {
+  const data = SUPPORTED_LANGUAGES.map((lang: string) => ({
+    value: lang,
+    label: lang.toUpperCase(),
+  }));
+
+  const renderOption = ({
+    option,
+  }: {
+    option: { value: string; label: string };
+  }): ReactNode => (
+    <Group gap='xs'>
+      <Avatar
+        src={LANGUAGE_FLAGS[option.value as Language]}
+        alt={`${option.value} flag`}
+        size={20}
+        radius='xl'
+      />
+      <Text size='sm'>{option.label}</Text>
+    </Group>
+  );
+
   return (
-    <Tooltip
-      title={t('changeLanguageTooltip')}
-      placement='top'
-      arrow
-      sx={{ paddingInline: 1.5, paddingBlock: 1 }}
-    >
+    <Tooltip label={t('changeLanguageTooltip')} position='top'>
       <Select
         name='language'
-        variant='plain'
-        sx={{ backgroundColor: '#9CC1FF' }}
+        size='sm'
+        data={data}
         value={language}
-        onChange={(_e, value: string | null) => setLanguage(value as Language)}
-      >
-        {SUPPORTED_LANGUAGES.map((lang: string) => (
-          <Option
-            key={lang}
-            label={
-              <Avatar
-                alt={`${lang} flag`}
-                src={LANGUAGE_FLAGS[lang]}
-                sx={{ width: 24, height: 24, marginRight: 0.5 }}
-              />
-            }
-            value={lang}
-          >
-            <Avatar
-              alt='Slovenian'
-              src={LANGUAGE_FLAGS[lang]}
-              sx={{ width: 24, height: 24, marginRight: 0.5 }}
-            />
-            {lang.toUpperCase()}
-          </Option>
-        ))}
-      </Select>
+        onChange={(value) => setLanguage(value as Language)}
+        renderOption={renderOption}
+        leftSection={
+          <Avatar
+            src={LANGUAGE_FLAGS[language]}
+            alt={`${language} flag`}
+            size={20}
+            radius='xl'
+          />
+        }
+        w={100}
+        styles={{
+          input: { backgroundColor: 'var(--mantine-color-brand-8)', color: '#f0f0f0', borderColor: 'var(--mantine-color-brand-7)' },
+        }}
+      />
     </Tooltip>
   );
 };

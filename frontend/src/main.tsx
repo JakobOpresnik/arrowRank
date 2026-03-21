@@ -1,6 +1,11 @@
 import { StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { MantineProvider } from '@mantine/core';
+import { Notifications } from '@mantine/notifications';
+import '@mantine/core/styles.css';
+import '@mantine/dates/styles.css';
+import '@mantine/notifications/styles.css';
 import './index.css';
 import App from './App.tsx';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -11,6 +16,7 @@ import { SUPPORTED_LANGUAGES } from './constants.ts';
 import type { Language } from './types.ts';
 import { useLanguageStore } from './stores/useLanguageStore.ts';
 import TranslationsLoader from './components/TranslationsLoader.tsx';
+import { theme } from './theme.ts';
 
 async function main() {
   const { language } = useLanguageStore.getState();
@@ -33,14 +39,17 @@ async function main() {
 
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <I18nextProvider i18n={i18n}>
-          <Suspense fallback={<TranslationsLoader />}>
-            <App />
-            <ReactQueryDevtools initialIsOpen={false} />
-          </Suspense>
-        </I18nextProvider>
-      </QueryClientProvider>
+      <MantineProvider theme={theme} defaultColorScheme="light">
+        <Notifications position="bottom-right" />
+        <QueryClientProvider client={queryClient}>
+          <I18nextProvider i18n={i18n}>
+            <Suspense fallback={<TranslationsLoader />}>
+              <App />
+              <ReactQueryDevtools initialIsOpen={false} />
+            </Suspense>
+          </I18nextProvider>
+        </QueryClientProvider>
+      </MantineProvider>
     </StrictMode>
   );
 }

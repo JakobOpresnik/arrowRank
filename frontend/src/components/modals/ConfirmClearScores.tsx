@@ -1,4 +1,4 @@
-import { Button, Typography } from '@mui/joy';
+import { Button, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { ClearScoresDialogProps } from '../../types';
 import { ModalWrapper } from './ModalWrapper';
@@ -16,22 +16,17 @@ const ConfirmClearScores = ({
       title={t('clearScoresDialogTitle')}
       actions={
         <>
-          <Button variant='outlined' sx={{ border: 2 }} onClick={onClose}>
+          <Button variant='default' onClick={onClose}>
             {t('cancelButton')}
           </Button>
-          <Button
-            sx={{
-              background: '#E64040',
-            }}
-            onClick={onClear}
-          >
+          <Button color='red' onClick={onClear}>
             {t('clearButton')}
           </Button>
         </>
       }
     >
-      <Typography>{t('clearScoresDialogContent1')}</Typography>
-      <Typography>{t('clearScoresDialogContent2')}</Typography>
+      <Text>{t('clearScoresDialogContent1')}</Text>
+      <Text>{t('clearScoresDialogContent2')}</Text>
     </ModalWrapper>
   );
 };

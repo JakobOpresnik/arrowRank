@@ -1,26 +1,20 @@
-import type { InputProps } from '@mui/joy';
-import { Input } from '@mui/joy';
+import { NumberInput, type NumberInputProps } from '@mantine/core';
 import { TARGET_TOTAL_SCORE } from '../constants';
 
-const INPUT_WIDTH = 150;
+const INPUT_WIDTH = 115;
 
-interface ScoreInputProps extends InputProps {
+interface ScoreInputProps extends NumberInputProps {
   scoreKey?: string;
-  min?: number;
-  max?: number;
 }
 
-const ScoreInput = (props: ScoreInputProps) => (
-  <Input
+const ScoreInput = ({ scoreKey: _scoreKey, ...props }: ScoreInputProps) => (
+  <NumberInput
     {...props}
-    sx={{ width: INPUT_WIDTH }}
-    slotProps={{
-      input: {
-        min: props.min ?? 0, // cannot be negative
-        max: props.max ?? TARGET_TOTAL_SCORE, // maximum score per round
-        ...props.slotProps?.input, // allow overriding
-      },
-    }}
+    w={INPUT_WIDTH}
+    min={props.min ?? 0}
+    max={props.max ?? TARGET_TOTAL_SCORE}
+    clampBehavior='strict'
+    allowDecimal={false}
   />
 );
 

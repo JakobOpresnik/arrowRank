@@ -1,6 +1,5 @@
 import {
   useState,
-  type SyntheticEvent,
   type ChangeEvent,
   type FormEvent,
   useMemo,
@@ -8,18 +7,15 @@ import {
   useCallback,
 } from 'react';
 import {
-  Autocomplete,
-  FormControl,
+  Group,
   Select,
   Stack,
-  Typography,
-  Option,
-  Input,
+  Text,
+  TextInput,
   Button,
   Divider,
-} from '@mui/joy';
-import CategoryIcon from '@mui/icons-material/Category';
-import HourglassTopIcon from '@mui/icons-material/HourglassTop';
+} from '@mantine/core';
+import { IconCategory, IconHourglass } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import ScoreInput from '../ScoreInput';
 import {
@@ -85,15 +81,7 @@ const EditArcher = ({
 
   useEffect(() => setScores(initializeScores(archerToEdit)), [archerToEdit]);
 
-  const handleCompetitionChange = (
-    _event: SyntheticEvent | null,
-    value: string | number | null
-  ): void => {
-    setSelectedAnotherCompetition(value as number);
-  };
-
   const handleSubmit = (event: FormEvent<Element>): void => {
-    console.log('submit');
     event.preventDefault();
     if (archerToEdit) {
       onArcherUpdate({
@@ -120,26 +108,18 @@ const EditArcher = ({
       (value): value is number =>
         value !== undefined && !isNaN(value) && value >= 0
     );
-    const sum: number = numbers.reduce(
-      (acc: number, value: number) => acc + value,
-      0
-    );
-    return sum;
+    return numbers.reduce((acc: number, value: number) => acc + value, 0);
   };
 
   const validateScores = useCallback((scores: ArcherScores): boolean => {
-    const sum: number = getTotalEnteredScores(scores);
-    if (sum !== TARGET_TOTAL_SCORE) return false;
-    return true;
+    return getTotalEnteredScores(scores) === TARGET_TOTAL_SCORE;
   }, []);
 
   const canSubmit: boolean = useMemo(() => {
     const hasValidSelection =
       !!selectedCompetition && !!selectedArcherId && validateScores(scores);
-
     const hasChanges =
       !!clubChange || !!categoryChange || !!ageGroupChange || !!genderChange;
-
     return hasValidSelection || hasChanges;
   }, [
     selectedCompetition,
@@ -178,45 +158,87 @@ const EditArcher = ({
       ? `${t('addScoresExceeds').toUpperCase()} ${TARGET_TOTAL_SCORE}`
       : `${scoreSum} / ${TARGET_TOTAL_SCORE}`;
 
+  const competitionData =
+    competitions?.map((c: Competition) => ({
+      value: String(c.id),
+      label: c.name,
+    })) ?? [];
+
+  const archerDisplayValue = archerToEdit
+    ? `${archerToEdit.first_name} ${archerToEdit.last_name}`
+    : '';
+
+  const categoryData = BOW_CATEGORIES.slice(1).map((cat: string) => ({
+    value: cat.toLowerCase(),
+    label: t(`tableCategory${cat.replace(/\s+/g, '')}`),
+  }));
+
+  const ageGroupData = AGE_GROUPS.slice(1).map((ag: string) => ({
+    value: ag,
+    label: t(`tableAgeGroup${ag}`),
+  }));
+
+  const genderData = GENDER_OPTIONS.slice(1).map((g: string) => ({
+    value: g,
+    label: t(`tableGender${g}`),
+  }));
+
   const SubmitButton = (
     <Button
       type='submit'
       form='edit-archer-form'
       disabled={!canSubmit}
-      sx={{
-        // size
-        height: 48,
+      h={48}
+      fullWidth
+      color={doesExceedTargetScore ? 'red' : undefined}
+      style={{
         position: 'relative',
         overflow: 'hidden',
-
         fontSize: '1rem',
-
-        // normal enabled state
-        background: doesExceedTargetScore ? '#ED6666' : '#0B6BCB',
-
-        // custom disabled style
-        '&.Mui-disabled': {
-          color: doesExceedTargetScore ? '#FFF' : '#00000042',
-          background: doesExceedTargetScore ? '#ED6666' : '#0000001F',
-        },
-
-        // progress bar layer
-        '&::before': {
-          content: '""',
+      }}
+    >
+      <div
+        style={{
           position: 'absolute',
           top: 0,
           left: 0,
           height: '100%',
-          width: `${(Math.min(scoreSum, 28) / 28) * 100}%`, // progress %
-          background: '#FFFFFF40',
+          width: `${(Math.min(scoreSum, 28) / 28) * 100}%`,
+          background: 'rgba(255,255,255,0.25)',
           transition: 'width 0.3s ease',
           pointerEvents: 'none',
-        },
-      }}
-    >
-      {buttonLabel}
+        }}
+      />
+      <span style={{ position: 'relative', zIndex: 1, color: '#fff' }}>{buttonLabel}</span>
     </Button>
   );
+
+  const makeScoreInput = (key: ScoreKey, points: number) => {
+    const hasValue = isValuePresent(archerToEdit, key);
+    return (
+      <ScoreInput
+        placeholder={`${t('score')} ${points}`}
+        value={
+          scores[key] !== undefined
+            ? scores[key]
+            : hasValue
+            ? archerToEdit![key as keyof Archer] as number
+            : ''
+        }
+        onChange={(val) => {
+          setScores({ ...scores, [key]: Number(val) });
+          if (archerToEdit) {
+            (archerToEdit as any)[key] = Number(val);
+          }
+        }}
+        styles={
+          hasValue
+            ? { input: { borderColor: 'var(--mantine-color-brand-4)' } }
+            : undefined
+        }
+      />
+    );
+  };
 
   return (
     <ModalWrapper
@@ -227,423 +249,108 @@ const EditArcher = ({
     >
       {archerToEdit && (
         <form id='edit-archer-form' onSubmit={handleSubmit}>
-          <Typography ml={0.5} mb={0.5}>
+          <Text size='sm' fw={500} ml={4} mb={4}>
             {t('competition')}
-          </Typography>
-          <Stack direction='column' spacing={2}>
+          </Text>
+          <Stack gap='lg'>
             <Select
-              defaultValue={selectedCompetition}
-              onChange={handleCompetitionChange}
+              data={competitionData}
+              defaultValue={
+                selectedCompetition ? String(selectedCompetition) : undefined
+              }
               disabled
-            >
-              {competitions?.map((competition: Competition) => (
-                <Option key={competition.id} value={competition.id}>
-                  {competition.name}
-                </Option>
-              ))}
-            </Select>
-            <FormControl>
-              <Typography ml={0.5} mb={0.5}>
+            />
+            <div>
+              <Text size='sm' fw={500} ml={4} mb={4}>
                 {t('archer')}
-              </Typography>
-              <Autocomplete
-                name='archer'
-                options={archers ?? []}
-                value={archerToEdit ?? null}
-                getOptionLabel={(archer: Archer) =>
-                  `${archer.first_name} ${archer.last_name}`
-                }
-                isOptionEqualToValue={(option: Archer, value: Archer) =>
-                  option.id === value.id
-                }
-                disabled
-              />
-            </FormControl>
+              </Text>
+              <TextInput value={archerDisplayValue} disabled />
+            </div>
 
-            <Stack direction='column' gap={0.5} width='100%'>
-              <Typography>{t('club')}</Typography>
-              <Input
-                id='archer-club'
-                name='club'
-                type='text'
-                placeholder={t('club')}
-                defaultValue={archerToEdit!.club}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                  setClubChange(true);
-                  if (archerToEdit) {
-                    archerToEdit.club = e.target.value;
-                  }
-                }}
-              />
-            </Stack>
-            <Stack direction='column' gap={0.5} width='100%'>
-              <Typography>{t('bowCategory')}</Typography>
-              <Select
-                variant='outlined'
-                defaultValue={archerToEdit?.category ?? ''}
-                placeholder={t('selectBowCategory')}
-                onChange={(
-                  _event: SyntheticEvent | null,
-                  newValue: string | null
-                ) => {
-                  setCategoryChange(true);
-                  if (archerToEdit) {
-                    archerToEdit.category = newValue as string;
-                  }
-                  setShouldDisableGenderSelect(
-                    archerToEdit?.age_group === 'U11'
-                  );
-                }}
-                startDecorator={
-                  <CategoryIcon color='primary' sx={{ marginRight: 0.5 }} />
+            <TextInput
+              label={t('club')}
+              placeholder={t('club')}
+              defaultValue={archerToEdit.club}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                setClubChange(true);
+                if (archerToEdit) {
+                  archerToEdit.club = e.target.value;
                 }
-                required
-              >
-                {BOW_CATEGORIES.slice(1).map((category: string) => {
-                  const translationKey = `tableCategory${category.replace(
-                    /\s+/g,
-                    ''
-                  )}`;
-                  return (
-                    <Option key={category} value={category.toLowerCase()}>
-                      {t(translationKey)}
-                    </Option>
-                  );
-                })}
-              </Select>
-            </Stack>
-            <Stack direction='column' gap={0.5} width='100%'>
-              <Typography>{t('ageGroup')}</Typography>
-              <Select
-                variant='outlined'
-                defaultValue={
-                  archerToEdit?.age_group === 'adults'
-                    ? capitalize(archerToEdit?.age_group)
-                    : archerToEdit?.age_group ?? ''
+              }}
+            />
+            <Select
+              label={t('bowCategory')}
+              placeholder={t('selectBowCategory')}
+              data={categoryData}
+              defaultValue={archerToEdit?.category ?? ''}
+              leftSection={<IconCategory size={18} />}
+              onChange={(value) => {
+                setCategoryChange(true);
+                if (archerToEdit) {
+                  archerToEdit.category = value as string;
                 }
-                placeholder={t('selectAgeGroup')}
-                onChange={(
-                  _event: SyntheticEvent | null,
-                  newValue: string | null
-                ) => {
-                  setAgeGroupChange(true);
-                  if (archerToEdit) {
-                    archerToEdit.age_group =
-                      newValue !== 'Adults' ? (newValue as string) : 'adults';
-                  }
-                  // auto set gender to mixed for U11
-                  setShouldDisableGenderSelect(false);
-                  if (newValue === 'U11') {
-                    setGenderChange(true);
-                    setShouldDisableGenderSelect(true);
-                    archerToEdit.gender = 'mixed';
-                  }
-                }}
-                startDecorator={
-                  <HourglassTopIcon color='primary' sx={{ marginRight: 0.5 }} />
+                setShouldDisableGenderSelect(
+                  archerToEdit?.age_group === 'U11'
+                );
+              }}
+            />
+            <Select
+              label={t('ageGroup')}
+              placeholder={t('selectAgeGroup')}
+              data={ageGroupData}
+              defaultValue={
+                archerToEdit?.age_group === 'adults'
+                  ? capitalize(archerToEdit?.age_group)
+                  : archerToEdit?.age_group ?? ''
+              }
+              leftSection={<IconHourglass size={18} />}
+              onChange={(value) => {
+                setAgeGroupChange(true);
+                if (archerToEdit) {
+                  archerToEdit.age_group =
+                    value !== 'Adults' ? (value as string) : 'adults';
                 }
-                required
-              >
-                {AGE_GROUPS.slice(1).map((ageGroup: string) => {
-                  const translationKey = `tableAgeGroup${ageGroup}`;
-                  return (
-                    <Option key={ageGroup} value={ageGroup}>
-                      {t(translationKey)}
-                    </Option>
-                  );
-                })}
-              </Select>
-            </Stack>
-            <Stack direction='column' gap={0.5} width='100%'>
-              <Typography>{t('gender')}</Typography>
-              <Select
-                variant='outlined'
-                value={capitalize(archerToEdit?.gender)}
-                placeholder={t('selectGender')}
-                onChange={(
-                  _event: SyntheticEvent | null,
-                  newValue: string | null
-                ) => {
+                setShouldDisableGenderSelect(false);
+                if (value === 'U11') {
                   setGenderChange(true);
-                  if (archerToEdit) {
-                    archerToEdit.gender = newValue as string;
-                  }
-                }}
-                startDecorator={
-                  <HourglassTopIcon color='primary' sx={{ marginRight: 0.5 }} />
+                  setShouldDisableGenderSelect(true);
+                  archerToEdit.gender = 'mixed';
                 }
-                disabled={shouldDisableGenderSelect}
-                required
-              >
-                {GENDER_OPTIONS.slice(1).map((gender: string) => {
-                  const translationKey = `tableGender${gender}`;
-                  return (
-                    <Option key={gender} value={gender}>
-                      {t(translationKey)}
-                    </Option>
-                  );
-                })}
-              </Select>
-            </Stack>
-            <Divider>{t('scores')}</Divider>
-            <Stack direction='column' spacing={2} mt={5} mb={2}>
-              <Stack direction='row' spacing={2}>
-                <ScoreInput
-                  id='archer-score-20'
-                  name='score-20'
-                  type='number'
-                  placeholder={`${t('score')} 20`}
-                  defaultValue={
-                    isValuePresent(archerToEdit, 'score20')
-                      ? archerToEdit!.score20
-                      : ''
-                  }
-                  sx={{
-                    borderColor: isValuePresent(archerToEdit, 'score20')
-                      ? '#0B6BCB'
-                      : '',
-                  }}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                    setScores({
-                      ...scores,
-                      score20: Number(e.target.value),
-                    });
-                    if (archerToEdit) {
-                      archerToEdit.score20 = Number(e.target.value);
-                    }
-                  }}
-                />
-                <ScoreInput
-                  id='archer-score-18'
-                  name='score-18'
-                  type='number'
-                  placeholder={`${t('score')} 18`}
-                  defaultValue={
-                    isValuePresent(archerToEdit, 'score18')
-                      ? archerToEdit!.score18
-                      : ''
-                  }
-                  sx={{
-                    borderColor: isValuePresent(archerToEdit, 'score18')
-                      ? '#0B6BCB'
-                      : '',
-                  }}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                    setScores({
-                      ...scores,
-                      score18: Number(e.target.value),
-                    });
-                    if (archerToEdit) {
-                      archerToEdit.score18 = Number(e.target.value);
-                    }
-                  }}
-                />
-                <ScoreInput
-                  id='archer-score-16'
-                  name='score-16'
-                  type='number'
-                  placeholder={`${t('score')} 16`}
-                  defaultValue={
-                    isValuePresent(archerToEdit, 'score16')
-                      ? archerToEdit!.score16
-                      : ''
-                  }
-                  sx={{
-                    borderColor: isValuePresent(archerToEdit, 'score16')
-                      ? '#0B6BCB'
-                      : '',
-                  }}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                    setScores({
-                      ...scores,
-                      score16: Number(e.target.value),
-                    });
-                    if (archerToEdit) {
-                      archerToEdit.score16 = Number(e.target.value);
-                    }
-                  }}
-                />
-              </Stack>
-              <Stack direction='row' spacing={2}>
-                <ScoreInput
-                  id='archer-score-14'
-                  name='score-14'
-                  type='number'
-                  placeholder={`${t('score')} 14`}
-                  defaultValue={
-                    isValuePresent(archerToEdit, 'score14')
-                      ? archerToEdit!.score14
-                      : ''
-                  }
-                  sx={{
-                    borderColor: isValuePresent(archerToEdit, 'score14')
-                      ? '#0B6BCB'
-                      : '',
-                  }}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                    setScores({
-                      ...scores,
-                      score14: Number(e.target.value),
-                    });
-                    if (archerToEdit) {
-                      archerToEdit.score14 = Number(e.target.value);
-                    }
-                  }}
-                />
-                <ScoreInput
-                  id='archer-score-12'
-                  name='score-12'
-                  type='number'
-                  placeholder={`${t('score')} 12`}
-                  defaultValue={
-                    isValuePresent(archerToEdit, 'score12')
-                      ? archerToEdit!.score12
-                      : ''
-                  }
-                  sx={{
-                    borderColor: isValuePresent(archerToEdit, 'score12')
-                      ? '#0B6BCB'
-                      : '',
-                  }}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                    setScores({
-                      ...scores,
-                      score12: Number(e.target.value),
-                    });
-                    if (archerToEdit) {
-                      archerToEdit.score12 = Number(e.target.value);
-                    }
-                  }}
-                />
-                <ScoreInput
-                  id='archer-score-10'
-                  name='score-10'
-                  type='number'
-                  placeholder={`${t('score')} 10`}
-                  defaultValue={
-                    isValuePresent(archerToEdit, 'score10')
-                      ? archerToEdit!.score10
-                      : ''
-                  }
-                  sx={{
-                    borderColor: isValuePresent(archerToEdit, 'score10')
-                      ? '#0B6BCB'
-                      : '',
-                  }}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                    setScores({
-                      ...scores,
-                      score10: Number(e.target.value),
-                    });
-                    if (archerToEdit) {
-                      archerToEdit.score10 = Number(e.target.value);
-                    }
-                  }}
-                />
-              </Stack>
-              <Stack direction='row' spacing={2}>
-                <ScoreInput
-                  id='archer-score-8'
-                  name='score-8'
-                  type='number'
-                  placeholder={`${t('score')} 8`}
-                  defaultValue={
-                    isValuePresent(archerToEdit, 'score8')
-                      ? archerToEdit!.score8
-                      : ''
-                  }
-                  sx={{
-                    borderColor: isValuePresent(archerToEdit, 'score8')
-                      ? '#0B6BCB'
-                      : '',
-                  }}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                    setScores({
-                      ...scores,
-                      score8: Number(e.target.value),
-                    });
-                    if (archerToEdit) {
-                      archerToEdit.score8 = Number(e.target.value);
-                    }
-                  }}
-                />
-                <ScoreInput
-                  id='archer-score-6'
-                  name='score-6'
-                  type='number'
-                  placeholder={`${t('score')} 6`}
-                  defaultValue={
-                    isValuePresent(archerToEdit, 'score6')
-                      ? archerToEdit!.score6
-                      : ''
-                  }
-                  sx={{
-                    borderColor: isValuePresent(archerToEdit, 'score6')
-                      ? '#0B6BCB'
-                      : '',
-                  }}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                    setScores({
-                      ...scores,
-                      score6: Number(e.target.value),
-                    });
-                    if (archerToEdit) {
-                      archerToEdit.score6 = Number(e.target.value);
-                    }
-                  }}
-                />
-                <ScoreInput
-                  id='archer-score-4'
-                  name='score-4'
-                  type='number'
-                  placeholder={`${t('score')} 4`}
-                  defaultValue={
-                    isValuePresent(archerToEdit, 'score4')
-                      ? archerToEdit!.score4
-                      : ''
-                  }
-                  sx={{
-                    borderColor: isValuePresent(archerToEdit, 'score4')
-                      ? '#0B6BCB'
-                      : '',
-                  }}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                    setScores({
-                      ...scores,
-                      score4: Number(e.target.value),
-                    });
-                    if (archerToEdit) {
-                      archerToEdit.score4 = Number(e.target.value);
-                    }
-                  }}
-                />
-              </Stack>
-              <Stack direction='row' alignSelf='center' width='30%'>
-                <ScoreInput
-                  id='archer-score-0'
-                  name='score-0'
-                  type='number'
-                  placeholder={`${t('score')} 0`}
-                  defaultValue={
-                    isValuePresent(archerToEdit, 'score0')
-                      ? archerToEdit!.score0
-                      : ''
-                  }
-                  sx={{
-                    borderColor: isValuePresent(archerToEdit, 'score0')
-                      ? '#0B6BCB'
-                      : '',
-                  }}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                    setScores({
-                      ...scores,
-                      score0: Number(e.target.value),
-                    });
-                    if (archerToEdit) {
-                      archerToEdit.score0 = Number(e.target.value);
-                    }
-                  }}
-                />
+              }}
+            />
+            <Select
+              label={t('gender')}
+              placeholder={t('selectGender')}
+              data={genderData}
+              value={capitalize(archerToEdit?.gender)}
+              leftSection={<IconHourglass size={18} />}
+              onChange={(value) => {
+                setGenderChange(true);
+                if (archerToEdit) {
+                  archerToEdit.gender = value as string;
+                }
+              }}
+              disabled={shouldDisableGenderSelect}
+            />
+            <Divider label={t('scores')} labelPosition='center' />
+            <Stack gap='md'>
+              <Group grow gap='sm'>
+                {makeScoreInput('score20', 20)}
+                {makeScoreInput('score18', 18)}
+                {makeScoreInput('score16', 16)}
+              </Group>
+              <Group grow gap='sm'>
+                {makeScoreInput('score14', 14)}
+                {makeScoreInput('score12', 12)}
+                {makeScoreInput('score10', 10)}
+              </Group>
+              <Group grow gap='sm'>
+                {makeScoreInput('score8', 8)}
+                {makeScoreInput('score6', 6)}
+                {makeScoreInput('score4', 4)}
+              </Group>
+              <Stack align='center'>
+                {makeScoreInput('score0', 0)}
               </Stack>
             </Stack>
           </Stack>

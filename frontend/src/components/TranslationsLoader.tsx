@@ -1,12 +1,12 @@
-import { CircularProgress, Stack, Typography } from '@mui/joy';
+import { Loader, Stack, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 
 const TranslationsLoader = () => {
   const { t } = useTranslation();
   return (
-    <Stack direction='column' alignItems='center' spacing={2}>
-      <CircularProgress color='primary' />
-      <Typography color='neutral'>{t('loadingTranslations')}</Typography>
+    <Stack align='center' gap='md'>
+      <Loader color='blue' />
+      <Text c='dimmed'>{t('loadingTranslations')}</Text>
     </Stack>
   );
 };
