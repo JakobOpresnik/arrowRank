@@ -299,6 +299,19 @@ def update_archer_score(
     return archer
 
 
+@app.delete("/archers/competition/{competition_id}")
+def delete_all_archers(
+    competition_id: int,
+    db: Session = Depends(get_db)
+) -> Dict[str, str]:
+    archers: List[Archer] = db.query(Archer).filter(Archer.competition_id == competition_id).all()
+    count = len(archers)
+    for archer in archers:
+        db.delete(archer)
+    db.commit()
+    return {"message": f"Deleted {count} archers"}
+
+
 @app.delete("/archers/{archer_id}", response_model=ArcherOut)
 def delete_archer(
     archer_id: int, 
@@ -548,14 +561,14 @@ def get_age_group_leaderboards(db: Session = Depends(get_db)) -> Dict[str, List[
 # ----------------------------
 # COMPETITIONS
 # ----------------------------
-@app.post("/competitions")
+@app.post("/competitions", response_model=CompetitionOut)
 def create_competition(
     name: str = Form(...),
     date: str = Form(...),
     location: str = Form(...),
     logo: UploadFile = File(None),  # optional logo file
     db: Session = Depends(get_db)
-) -> None:
+):
     logo_url: Optional[str] = save_uploaded_file(logo, name)
 
     new_competition = Competition(
@@ -567,6 +580,7 @@ def create_competition(
     db.add(new_competition)
     db.commit()
     db.refresh(new_competition)
+    return new_competition
 
 
 @app.get("/competitions", response_model=List[CompetitionOut])
@@ -580,6 +594,27 @@ def get_competition(competition_id: int, db: Session = Depends(get_db)):
     if competition is None:
         raise HTTPException(status_code=404, detail="Competition not found")
     return competition
+
+
+@app.delete("/competitions/{competition_id}", response_model=CompetitionOut)
+def delete_competition(competition_id: int, db: Session = Depends(get_db)):
+    competition: Optional[Competition] = db.query(Competition).filter(Competition.id == competition_id).first()
+    if not competition:
+        raise HTTPException(status_code=404, detail="Competition not found")
+    db.query(Archer).filter(Archer.competition_id == competition_id).delete()
+    db.delete(competition)
+    db.commit()
+    return competition
+
+
+@app.delete("/competitions")
+def delete_all_competitions(db: Session = Depends(get_db)) -> Dict[str, int]:
+    archer_count: int = db.query(Archer).count()
+    competition_count: int = db.query(Competition).count()
+    db.query(Archer).delete()
+    db.query(Competition).delete()
+    db.commit()
+    return {"archer_count": archer_count, "competition_count": competition_count}
 
 
 @app.post("/competitions/logo/{competition_id}", response_model=CompetitionOut)
