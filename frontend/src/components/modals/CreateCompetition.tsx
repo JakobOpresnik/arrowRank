@@ -73,15 +73,6 @@ const CreateCompetition = ({
     setLogoFile(file);
   };
 
-  const handleSubmitSuccess = (updated?: Competition): void => {
-    if (updated) {
-      onUpdated?.(updated);
-    } else {
-      onCreated?.();
-    }
-    clearFilters();
-  };
-
   const clearFormFields = (): void => {
     setName('');
     setDate('');
@@ -103,7 +94,8 @@ const CreateCompetition = ({
         {
           onError: (err: Error) => console.error(err),
           onSuccess: (updatedCompetition: Competition) => {
-            handleSubmitSuccess(updatedCompetition);
+            onUpdated?.(updatedCompetition);
+            clearFilters();
           },
         },
       );
@@ -112,7 +104,10 @@ const CreateCompetition = ({
         { name, date, location, logoFile },
         {
           onError: (err: Error) => console.error(err),
-          onSuccess: () => handleSubmitSuccess(),
+          onSuccess: () => {
+            onCreated?.();
+            clearFilters();
+          },
         },
       );
     }

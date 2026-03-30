@@ -33,7 +33,7 @@ const SelectCompetition = ({ onSelect }: SelectCompetitionProps) => {
           onSelect?.();
         }
       }}
-      w={250}
+      w={180}
       styles={{
         input: {
           overflow: 'hidden',
