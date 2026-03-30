@@ -6,6 +6,18 @@ import { Archer, ArcherExtended, Competition, scoreKeys } from '../types';
 import { BE_BASE_URL } from '../constants';
 import sl from '../locales/sl/translations.json';
 
+declare global {
+  interface Window {
+    electronApi?: {
+      isElectron: boolean;
+      platform: string;
+      env: string;
+      saveExcelFile: (buffer: Uint8Array, filename: string) => Promise<string>;
+      openFileLocation: (filePath: string) => Promise<void>;
+    };
+  }
+}
+
 // ── Layout constants ──────────────────────────────────────────────────────────
 
 // 1-indexed columns (exceljs convention)
@@ -128,23 +140,81 @@ function applyWhite(cell: ExcelJS.Cell) {
   }
 }
 
+// ── Group ordering ────────────────────────────────────────────────────────────
+
+const CATEGORY_PRIORITY: Record<string, number> = {
+  'barebow': 0,
+  'long bow': 1,
+  'traditional bow': 2,
+  'primitive bow': 3,
+  'guest': 4,
+};
+
+const AGE_GROUP_PRIORITY: Record<string, number> = {
+  'u11': 0,
+  'u16': 1,
+  'adults': 2,
+};
+
+const GENDER_PRIORITY: Record<string, number> = {
+  'female': 0,
+  'male': 1,
+  'mixed': 2,
+};
+
+/** Stable-sorts archers so groups appear in (category → age group → gender) order.
+ *  Within each group the original score-descending order is preserved. */
+function sortForGroupOrder(archers: Archer[]): Archer[] {
+  return [...archers].sort((a, b) => {
+    const catDiff =
+      (CATEGORY_PRIORITY[a.category.toLowerCase()] ?? 99) -
+      (CATEGORY_PRIORITY[b.category.toLowerCase()] ?? 99);
+    if (catDiff !== 0) return catDiff;
+    const ageDiff =
+      (AGE_GROUP_PRIORITY[a.age_group.toLowerCase()] ?? 99) -
+      (AGE_GROUP_PRIORITY[b.age_group.toLowerCase()] ?? 99);
+    if (ageDiff !== 0) return ageDiff;
+    return (
+      (GENDER_PRIORITY[a.gender.toLowerCase()] ?? 99) -
+      (GENDER_PRIORITY[b.gender.toLowerCase()] ?? 99)
+    );
+  });
+}
+
 // ── Main export function ──────────────────────────────────────────────────────
 
 const exportTableToExcel = async (
   archers: Archer[],
   competition?: Competition | null,
-): Promise<void> => {
-  if (!archers || archers.length === 0) return;
+): Promise<string | null> => {
+  if (!archers || archers.length === 0) return null;
 
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet('Rezultati');
 
+  // ── A4 portrait page setup (columns fit width, rows break across pages)
+  ws.pageSetup = {
+    paperSize: 9, // A4
+    orientation: 'portrait',
+    fitToPage: true,
+    fitToWidth: 1,
+    fitToHeight: 0,
+    margins: {
+      left: 0.35,
+      right: 0.35,
+      top: 0.75,
+      bottom: 0.75,
+      header: 0.3,
+      footer: 0.3,
+    },
+  };
+
   ws.columns = [
-    { width: 5 }, // A rank
-    { width: 26 }, // B name
-    { width: 22 }, // C club
-    { width: 9 }, // D total
-    ...scoreKeys.map(() => ({ width: 5 })), // E–N scores
+    { width: 5 },  // A rank
+    { width: 24 }, // B name
+    { width: 20 }, // C club
+    { width: 8 },  // D total
+    ...scoreKeys.map(() => ({ width: 5 })), // E–N scores (10 × 5 = 50)
     ...Array(FILL_COLS - TOTAL_COLS).fill({ width: 8 }), // extra white cols
   ];
 
@@ -251,22 +321,16 @@ const exportTableToExcel = async (
   };
   rezCell.fill = whiteFill;
   rezCell.alignment = { horizontal: 'center', vertical: 'middle' };
+  ws.mergeCells(r, 1, r, TOTAL_COLS);
+  rezCell.fill = whiteFill;
+  // All cells in a merged range return the master cell in ExcelJS,
+  // so set the complete 4-sided border directly on the master cell only.
   rezCell.border = {
     top: mediumLine,
     bottom: mediumLine,
     left: mediumLine,
     right: mediumLine,
   };
-  ws.mergeCells(r, 1, r, TOTAL_COLS);
-  for (let c = 2; c <= TOTAL_COLS; c++) {
-    const mc = ws.getCell(r, c);
-    mc.fill = whiteFill;
-    mc.border = {
-      top: mediumLine,
-      bottom: mediumLine,
-      ...(c === TOTAL_COLS ? { right: mediumLine } : {}),
-    };
-  }
   ws.getRow(r).height = 62;
   r++;
 
@@ -277,7 +341,7 @@ const exportTableToExcel = async (
   }
 
   // ── Category groups ────────────────────────────────────────────────────────
-  const groups = groupByCategory(archers);
+  const groups = groupByCategory(sortForGroupOrder(archers));
   const colHeaders: (string | number)[] = [
     'Št.',
     'Ime in priimek',
@@ -374,15 +438,29 @@ const exportTableToExcel = async (
     }
   }
 
+  // ── Restrict print area to data columns only (A–N) so fitToWidth ignores the extra white fill columns ──
+  const lastColLetter = String.fromCharCode(64 + TOTAL_COLS); // 14 → 'N'
+  ws.pageSetup.printArea = `A1:${lastColLetter}${r - 1}`;
+
   // ── Save ───────────────────────────────────────────────────────────────────
   const buf = await wb.xlsx.writeBuffer();
-  const blob = new Blob([buf as ArrayBuffer], {
-    type: 'application/octet-stream',
-  });
   const filename = competition
     ? `${competition.name}_rezultati.xlsx`
     : 'rezultati.xlsx';
+
+  if (window.electronApi?.saveExcelFile) {
+    const savedPath = await window.electronApi.saveExcelFile(
+      new Uint8Array(buf as ArrayBuffer),
+      filename,
+    );
+    return savedPath;
+  }
+
+  const blob = new Blob([buf as ArrayBuffer], {
+    type: 'application/octet-stream',
+  });
   saveAs(blob, filename);
+  return null;
 };
 
 export { exportTableToExcel };
