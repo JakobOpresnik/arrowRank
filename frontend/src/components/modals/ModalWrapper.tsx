@@ -8,6 +8,8 @@ export const ModalWrapper = ({
   children,
   actions,
   maxWidth = 440,
+  padding,
+  footerMt = 'md',
 }: ModalWrapperProps) => {
   return (
     <Modal
@@ -18,10 +20,11 @@ export const ModalWrapper = ({
       closeOnClickOutside={false}
       centered
       scrollAreaComponent={ScrollArea.Autosize}
+      {...(padding !== undefined && { padding })}
     >
       {children}
       {actions && (
-        <Group justify='flex-end' mt='md'>
+        <Group justify='flex-end' mt={footerMt}>
           {actions}
         </Group>
       )}
