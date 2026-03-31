@@ -23,10 +23,8 @@ export const useCompetitionStore = create<CompetitionStore>()(
         })),
     }),
     {
-      name: 'competition-store', // key in localStorage
-      //   partialize: (state) => ({
-      //     selectedCompetition: state.selectedCompetition,
-      //   }),
+      name: 'competition-store',
+      partialize: () => ({}), // do not persist selected competition across sessions
     },
   ),
 );
