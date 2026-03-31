@@ -94,7 +94,7 @@
   "clearFiltersTooltip": "Ukloni sve filtre",
   "clearScoresTooltip": "Ukloni sve rezultate",
   "changeLanguageTooltip": "Promijeni jezik",
-  "exportButton": "Generiraj izvješće",
+  "exportButton": "Ispis rezultata",
   "exportingReport": "Generiranje izvješća...",
   "exportSuccess": "Izvješće uspješno spremljeno!",
   "exportError": "Izvoz izvješća nije uspio.",

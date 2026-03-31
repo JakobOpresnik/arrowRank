@@ -94,7 +94,7 @@
   "clearFiltersTooltip": "Alle Filter löschen",
   "clearScoresTooltip": "Alle Ergebnisse löschen",
   "changeLanguageTooltip": "Sprache ändern",
-  "exportButton": "Bericht erstellen",
+  "exportButton": "Ergebnisausdruck",
   "exportingReport": "Bericht wird generiert...",
   "exportSuccess": "Bericht erfolgreich gespeichert!",
   "exportError": "Export des Berichts fehlgeschlagen.",

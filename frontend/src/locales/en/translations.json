@@ -94,7 +94,7 @@
   "clearFiltersTooltip": "Clear all filters",
   "clearScoresTooltip": "Clear all scores",
   "changeLanguageTooltip": "Change language",
-  "exportButton": "Generate Report",
+  "exportButton": "Print Results",
   "exportingReport": "Generating report...",
   "exportSuccess": "Report saved successfully!",
   "exportError": "Failed to export report.",

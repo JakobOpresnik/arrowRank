@@ -94,7 +94,7 @@
   "clearFiltersTooltip": "Cancella tutti i filtri",
   "clearScoresTooltip": "Cancella tutti i punteggi",
   "changeLanguageTooltip": "Cambia lingua",
-  "exportButton": "Genera rapporto",
+  "exportButton": "Stampa dei risultati",
   "exportingReport": "Generazione del rapporto...",
   "exportSuccess": "Rapporto salvato con successo!",
   "exportError": "Esportazione del rapporto non riuscita.",
