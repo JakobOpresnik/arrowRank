@@ -1,7 +1,7 @@
 {
   "scoreboard": "TABELA REZULTATOV",
   "ptlLogoAltText": "PTL Logotip",
-  "selectCompetition": "Izberi tekmovanje",
+  "selectCompetition":"Izberi tekmovanje",
   "noCompetitionsAvailable": "Ni najdenih tekmovanj.",
   "createCompetition": "Novo tekmovanje",
   "competitionCreatedSuccessfully": "Tekmovanje uspešno ustvarjeno!",
@@ -84,6 +84,7 @@
   "tableAgeGroupU16": "U16",
   "tableAgeGroupAdults": "odrasli",
   "tableEditButton": "Uredi",
+  "saveButton": "Shrani",
   "editArcher": "Uredi lokostrelca",
   "tableDeleteButton": "Izbriši",
   "archersSearch": "Išči po imenu ali priimku...",
@@ -128,6 +129,8 @@
   "deleteCompetitionDialogContent1": "To bo trajno izbrisalo to tekmovanje in vse lokostrelce, ki so v njem registrirani.",
   "deleteCompetitionDialogContent2": "To dejanje je nepovratno.",
   "noCompetitionsHint": "Dodaj novo tekmovanje s klikom na zgornji gumb.",
+  "noCompetitionSelected": "Ni izbranega tekmovanja.",
+  "noCompetitionSelectedHint": "Izberi obstoječe tekmovanje iz spustnega menija ali ustvari novo.",
   "noArchersInCompetition": "Ni lokostrelcev",
   "loadingTranslations": "Nalaganje prevodov..."
 }

@@ -1,7 +1,7 @@
 {
   "scoreboard": "TABELLONE",
   "ptlLogoAltText": "Logo PTL",
-  "selectCompetition": "Seleziona una competizione",
+  "selectCompetition":"Seleziona una competizione",
   "noCompetitionsAvailable": "Nessun concorso trovato.",
   "createCompetition": "Crea una nuova competizione",
   "competitionCreatedSuccessfully": "Concorso creato con successo!",
@@ -84,6 +84,7 @@
   "tableAgeGroupU16": "U16",
   "tableAgeGroupAdults": "adulti",
   "tableEditButton": "Modifica",
+  "saveButton": "Salva",
   "editArcher": "Modifica Arciere",
   "tableDeleteButton": "Elimina",
   "archersSearch": "Cerca per nome o cognome...",
@@ -128,6 +129,8 @@
   "deleteCompetitionDialogContent1": "Questo eliminerà definitivamente questa competizione e tutti gli arcieri registrati in essa.",
   "deleteCompetitionDialogContent2": "Questa azione non può essere annullata.",
   "noCompetitionsHint": "Aggiungi una nuova competizione tramite il pulsante in alto.",
+  "noCompetitionSelected": "Nessuna competizione selezionata.",
+  "noCompetitionSelectedHint": "Seleziona una competizione esistente dal menu a tendina o creane una nuova.",
   "noArchersInCompetition": "Nessun arciere",
   "loadingTranslations": "Caricamento traduzioni..."
 }

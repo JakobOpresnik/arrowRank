@@ -1,7 +1,7 @@
 {
   "scoreboard": "TABLICA REZULTATA",
   "ptlLogoAltText": "PTL Logo",
-  "selectCompetition": "Odaberi natjecanje",
+  "selectCompetition":"Odaberi natjecanje",
   "noCompetitionsAvailable": "Nema pronađenih natjecanja.",
   "createCompetition": "Novo natjecanje",
   "competitionCreatedSuccessfully": "Natjecanje uspješno kreirano!",
@@ -84,6 +84,7 @@
   "tableAgeGroupU16": "U16",
   "tableAgeGroupAdults": "odrasli",
   "tableEditButton": "Uredi",
+  "saveButton": "Spremi",
   "editArcher": "Uredi strijelca",
   "tableDeleteButton": "Obriši",
   "archersSearch": "Traži po imenu ili prezimenu...",
@@ -128,6 +129,8 @@
   "deleteCompetitionDialogContent1": "Ovo će trajno obrisati ovo natjecanje i sve strijelce registrirane u njemu.",
   "deleteCompetitionDialogContent2": "Ova radnja se ne može poništiti.",
   "noCompetitionsHint": "Dodaj novo natjecanje klikom na gornji gumb.",
+  "noCompetitionSelected": "Nijedno natjecanje nije odabrano.",
+  "noCompetitionSelectedHint": "Odaberi postojeće natjecanje iz padajućeg izbornika ili stvori novo.",
   "noArchersInCompetition": "Nema strijelaca",
   "loadingTranslations": "Učitavanje prijevoda..."
 }

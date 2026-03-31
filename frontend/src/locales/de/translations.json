@@ -1,7 +1,7 @@
 {
   "scoreboard": "ANZEIGETAFEL",
   "ptlLogoAltText": "PTL Logo",
-  "selectCompetition": "Einen Wettbewerb auswählen",
+  "selectCompetition":"Einen Wettbewerb auswählen",
   "noCompetitionsAvailable": "Keine Wettbewerbe gefunden.",
   "createCompetition": "Neuer Wettbewerb",
   "competitionCreatedSuccessfully": "Wettbewerb erfolgreich erstellt!",
@@ -84,6 +84,7 @@
   "tableAgeGroupU16": "U16",
   "tableAgeGroupAdults": "Erwachsene",
   "tableEditButton": "Bearbeiten",
+  "saveButton": "Speichern",
   "editArcher": "Bogenschützen bearbeiten",
   "tableDeleteButton": "Löschen",
   "archersSearch": "Suche nach Vor- oder Nachnamen...",
@@ -116,6 +117,8 @@
   "deleteCompetitionDialogContent1": "Dieser Wettkampf und alle darin registrierten Bogenschützen werden dauerhaft gelöscht.",
   "deleteCompetitionDialogContent2": "Diese Aktion kann nicht rückgängig gemacht werden.",
   "noCompetitionsHint": "Füge einen neuen Wettkampf über die Schaltfläche oben hinzu.",
+  "noCompetitionSelected": "Kein Wettkampf ausgewählt.",
+  "noCompetitionSelectedHint": "Wähle einen vorhandenen Wettkampf aus dem Dropdown aus oder erstelle einen neuen.",
   "noArchersInCompetition": "Keine Bogenschützen",
   "loadingTranslations": "Übersetzungen werden geladen..."
 }

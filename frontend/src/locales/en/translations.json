@@ -84,6 +84,7 @@
   "tableAgeGroupU16": "U16",
   "tableAgeGroupAdults": "adults",
   "tableEditButton": "Edit",
+  "saveButton": "Save",
   "editArcher": "Edit Archer",
   "tableDeleteButton": "Delete",
   "archersSearch": "Search by first or last name...",
@@ -128,6 +129,8 @@
   "deleteCompetitionDialogContent1": "This will permanently delete this competition and all archers registered in it.",
   "deleteCompetitionDialogContent2": "This action cannot be undone.",
   "noCompetitionsHint": "Add a new competition using the button above.",
+  "noCompetitionSelected": "No competition selected.",
+  "noCompetitionSelectedHint": "Select an existing competition from the dropdown or create a new one.",
   "noArchersInCompetition": "No archers yet",
   "loadingTranslations": "Loading translations..."
 }
