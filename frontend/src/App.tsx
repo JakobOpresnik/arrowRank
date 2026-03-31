@@ -421,6 +421,16 @@ function App() {
               ageGroup: ageGroupFilter,
             }}
           />
+        ) : competitions && competitions.length > 0 ? (
+          <Stack align='center' justify='center' gap='xs' mt={80}>
+            <IconTrophyOff size={48} color='var(--mantine-color-dimmed)' />
+            <Text size='lg' c='dimmed' fw={500}>
+              {t('noCompetitionSelected')}
+            </Text>
+            <Text size='sm' c='dimmed'>
+              {t('noCompetitionSelectedHint')}
+            </Text>
+          </Stack>
         ) : (
           <Stack align='center' justify='center' gap='xs' mt={80}>
             <IconTrophyOff size={48} color='var(--mantine-color-dimmed)' />
