@@ -8,4 +8,6 @@ contextBridge.exposeInMainWorld('electronApi', {
     ipcRenderer.invoke('save-excel-file', buffer, filename),
   openFileLocation: (filePath) =>
     ipcRenderer.invoke('open-file-location', filePath),
+  openFile: (filePath) =>
+    ipcRenderer.invoke('open-file', filePath),
 });

@@ -251,12 +251,14 @@ function App() {
             >
               {t('createCompetition')}
             </Button>
-            <Button
-              leftSection={<IconListDetails size={18} />}
-              onClick={() => setIsOpenArchers(true)}
-            >
-              {t('addArchers')}
-            </Button>
+            {competitions && competitions.length > 0 && (
+              <Button
+                leftSection={<IconListDetails size={18} />}
+                onClick={() => setIsOpenArchers(true)}
+              >
+                {t('addArchers')}
+              </Button>
+            )}
             <AddArchers
               open={isOpenArchers}
               onClose={() => setIsOpenArchers(false)}
@@ -306,7 +308,7 @@ function App() {
                         size='xs'
                         mt={6}
                         variant='light'
-                        onClick={() => window.electronApi?.openFileLocation(savedPath)}
+                        onClick={() => window.electronApi?.openFile(savedPath)}
                       >
                         {t('openFolder')}
                       </Button>

@@ -77,6 +77,10 @@ ipcMain.handle('open-file-location', (_event, filePath) => {
   shell.showItemInFolder(filePath);
 });
 
+ipcMain.handle('open-file', (_event, filePath) => {
+  shell.openPath(filePath);
+});
+
 app.whenReady().then(async () => {
   // pick backend path depending on dev or packaged build
   const backendPath = app.isPackaged
