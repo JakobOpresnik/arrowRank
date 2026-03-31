@@ -489,7 +489,7 @@ const ArcherList = ({
                     }
                   >
                     <Table.Td>
-                      <Text fw={600} size='sm' c='dimmed'>
+                      <Text fw={600} size='sm'>
                         {archer.rank}
                       </Text>
                     </Table.Td>
