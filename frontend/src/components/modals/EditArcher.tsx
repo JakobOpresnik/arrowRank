@@ -71,6 +71,7 @@ const EditArcher = ({
   const [categoryChange, setCategoryChange] = useState<boolean>(false);
   const [ageGroupChange, setAgeGroupChange] = useState<boolean>(false);
   const [genderChange, setGenderChange] = useState<boolean>(false);
+  const [scoresChanged, setScoresChanged] = useState<boolean>(false);
 
   const [scores, setScores] = useState<ArcherScores>(
     initializeScores(archerToEdit)
@@ -79,7 +80,10 @@ const EditArcher = ({
   const [shouldDisableGenderSelect, setShouldDisableGenderSelect] =
     useState<boolean>(false);
 
-  useEffect(() => setScores(initializeScores(archerToEdit)), [archerToEdit]);
+  useEffect(() => {
+    setScores(initializeScores(archerToEdit));
+    setScoresChanged(false);
+  }, [archerToEdit]);
 
   const handleSubmit = (event: FormEvent<Element>): void => {
     event.preventDefault();
@@ -151,12 +155,13 @@ const EditArcher = ({
     [scoreSum]
   );
 
-  const buttonLabel: string =
-    scoreSum === TARGET_TOTAL_SCORE
-      ? t('tableEditButton').toUpperCase()
-      : doesExceedTargetScore
-      ? `${t('addScoresExceeds').toUpperCase()} ${TARGET_TOTAL_SCORE}`
-      : `${scoreSum} / ${TARGET_TOTAL_SCORE}`;
+  const buttonLabel: string = !scoresChanged
+    ? t('saveButton').toUpperCase()
+    : scoreSum === TARGET_TOTAL_SCORE
+    ? t('saveButton').toUpperCase()
+    : doesExceedTargetScore
+    ? `${t('addScoresExceeds').toUpperCase()} ${TARGET_TOTAL_SCORE}`
+    : `${scoreSum} / ${TARGET_TOTAL_SCORE}`;
 
   const competitionData =
     competitions?.map((c: Competition) => ({
@@ -227,6 +232,7 @@ const EditArcher = ({
         }
         onChange={(val) => {
           setScores({ ...scores, [key]: Number(val) });
+          setScoresChanged(true);
           if (archerToEdit) {
             (archerToEdit as any)[key] = Number(val);
           }
