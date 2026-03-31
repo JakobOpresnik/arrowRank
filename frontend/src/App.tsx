@@ -164,16 +164,11 @@ function App() {
   };
 
   function formatDate(dateStr: string): string {
-    const date = new Date(dateStr);
-    if (isNaN(date.getTime())) {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) {
       throw new Error(`Invalid date: ${dateStr}`);
     }
-    const options: Intl.DateTimeFormatOptions = {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    };
-    return new Intl.DateTimeFormat('sl-SI', options).format(date);
+    return `${d.getDate()}. ${d.getMonth() + 1}. ${d.getFullYear()}`;
   }
 
   const showSuccessNotification = (state: CompetitionState): void => {
