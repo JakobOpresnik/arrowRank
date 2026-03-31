@@ -124,6 +124,9 @@
   "deleteAllCompetitionsArchersWarning": "Opozorilo: izbrano tekmovanje še vedno vsebuje registrirane lokostrelce.",
   "deleteAllCompetitionsDialogContent1": "To bo trajno izbrisalo vsa tekmovanja in vse lokostrelce, ki so v njih registrirani.",
   "deleteAllCompetitionsDialogContent2": "To dejanje je nepovratno.",
+  "deleteCompetitionDialogTitle": "Izbriši tekmovanje",
+  "deleteCompetitionDialogContent1": "To bo trajno izbrisalo to tekmovanje in vse lokostrelce, ki so v njem registrirani.",
+  "deleteCompetitionDialogContent2": "To dejanje je nepovratno.",
   "noCompetitionsHint": "Dodaj novo tekmovanje s klikom na zgornji gumb.",
   "noArchersInCompetition": "Ni lokostrelcev",
   "loadingTranslations": "Nalaganje prevodov..."

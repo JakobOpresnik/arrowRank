@@ -124,6 +124,9 @@
   "deleteAllCompetitionsArchersWarning": "Upozorenje: odabrano natjecanje još uvijek ima registriranih strijelaca.",
   "deleteAllCompetitionsDialogContent1": "Ovo će trajno obrisati sva natjecanja i sve strijelce registrirane u njima.",
   "deleteAllCompetitionsDialogContent2": "Ova radnja se ne može poništiti.",
+  "deleteCompetitionDialogTitle": "Obriši natjecanje",
+  "deleteCompetitionDialogContent1": "Ovo će trajno obrisati ovo natjecanje i sve strijelce registrirane u njemu.",
+  "deleteCompetitionDialogContent2": "Ova radnja se ne može poništiti.",
   "noCompetitionsHint": "Dodaj novo natjecanje klikom na gornji gumb.",
   "noArchersInCompetition": "Nema strijelaca",
   "loadingTranslations": "Učitavanje prijevoda..."

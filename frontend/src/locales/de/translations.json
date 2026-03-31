@@ -112,6 +112,9 @@
   "deleteArcherDialogContent2": "Sind Sie sicher, dass Sie das Ergebnis dieses Bogenschützen löschen möchten?",
   "deleteArcherDialogContent3": "Diese Aktion kann nicht rückgängig gemacht werden.",
   "noArchersFoundForFilters": "Keine Bogenschützen für die ausgewählten Filter gefunden.",
+  "deleteCompetitionDialogTitle": "Wettkampf löschen",
+  "deleteCompetitionDialogContent1": "Dieser Wettkampf und alle darin registrierten Bogenschützen werden dauerhaft gelöscht.",
+  "deleteCompetitionDialogContent2": "Diese Aktion kann nicht rückgängig gemacht werden.",
   "noCompetitionsHint": "Füge einen neuen Wettkampf über die Schaltfläche oben hinzu.",
   "noArchersInCompetition": "Keine Bogenschützen",
   "loadingTranslations": "Übersetzungen werden geladen..."

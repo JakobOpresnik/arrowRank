@@ -124,6 +124,9 @@
   "deleteAllCompetitionsArchersWarning": "Warning: the selected competition still has archers registered in it.",
   "deleteAllCompetitionsDialogContent1": "This will permanently delete all competitions and all archers registered in them.",
   "deleteAllCompetitionsDialogContent2": "This action cannot be undone.",
+  "deleteCompetitionDialogTitle": "Delete Competition",
+  "deleteCompetitionDialogContent1": "This will permanently delete this competition and all archers registered in it.",
+  "deleteCompetitionDialogContent2": "This action cannot be undone.",
   "noCompetitionsHint": "Add a new competition using the button above.",
   "noArchersInCompetition": "No archers yet",
   "loadingTranslations": "Loading translations..."

@@ -124,6 +124,9 @@
   "deleteAllCompetitionsArchersWarning": "Attenzione: la competizione selezionata ha ancora degli arcieri registrati.",
   "deleteAllCompetitionsDialogContent1": "Questo eliminerà definitivamente tutte le competizioni e tutti gli arcieri registrati in esse.",
   "deleteAllCompetitionsDialogContent2": "Questa azione non può essere annullata.",
+  "deleteCompetitionDialogTitle": "Elimina competizione",
+  "deleteCompetitionDialogContent1": "Questo eliminerà definitivamente questa competizione e tutti gli arcieri registrati in essa.",
+  "deleteCompetitionDialogContent2": "Questa azione non può essere annullata.",
   "noCompetitionsHint": "Aggiungi una nuova competizione tramite il pulsante in alto.",
   "noArchersInCompetition": "Nessun arciere",
   "loadingTranslations": "Caricamento traduzioni..."
