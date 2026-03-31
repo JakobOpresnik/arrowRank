@@ -1,10 +1,18 @@
 import { useState, useEffect } from 'react';
-import { Button, Text, TextInput, Code, ThemeIcon, Group, Divider } from '@mantine/core';
+import {
+  Button,
+  Text,
+  TextInput,
+  Code,
+  ThemeIcon,
+  Group,
+  Divider,
+} from '@mantine/core';
 import { IconAlertTriangle } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { ModalWrapper } from './ModalWrapper';
 
-const CONFIRM_WORD = 'DELETE COMPETITION';
+const CONFIRM_WORD = 'DELETE EVERYTHING';
 
 interface Props {
   open: boolean;
@@ -13,7 +21,12 @@ interface Props {
   onDelete: () => void;
 }
 
-const ConfirmDeleteAllCompetitions = ({ open, hasArchers, onClose, onDelete }: Props) => {
+const ConfirmDeleteAllCompetitions = ({
+  open,
+  hasArchers,
+  onClose,
+  onDelete,
+}: Props) => {
   const { t } = useTranslation();
   const [value, setValue] = useState('');
 
@@ -56,7 +69,9 @@ const ConfirmDeleteAllCompetitions = ({ open, hasArchers, onClose, onDelete }: P
       <Text>{t('deleteAllCompetitionsDialogContent1')}</Text>
       <Text mt='xs'>{t('deleteAllCompetitionsDialogContent2')}</Text>
       <Divider my='md' />
-      <Text size='sm' mb={4}>{t('deleteAllCompetitionsConfirmLabel')} <Code>{CONFIRM_WORD}</Code></Text>
+      <Text size='sm' mb={4}>
+        {t('deleteAllCompetitionsConfirmLabel')} <Code>{CONFIRM_WORD}</Code>
+      </Text>
       <TextInput
         value={value}
         onChange={(e) => setValue(e.currentTarget.value)}
