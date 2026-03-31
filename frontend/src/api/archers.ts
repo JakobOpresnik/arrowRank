@@ -193,3 +193,14 @@ export const deleteArcher = async (archerId: number): Promise<void> => {
     throw new Error(errorData.message || 'Failed to delete archer');
   }
 };
+
+export const deleteAllArchers = async (competitionId: number): Promise<void> => {
+  const res: Response = await fetch(
+    `${BE_BASE_URL}/archers/competition/${competitionId}`,
+    { method: 'DELETE' },
+  );
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.message || 'Failed to delete archers');
+  }
+};

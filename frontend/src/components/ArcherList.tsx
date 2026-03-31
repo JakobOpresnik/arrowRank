@@ -10,6 +10,7 @@ import {
   ActionIcon,
   Group,
   Paper,
+  Center,
 } from '@mantine/core';
 import {
   IconEdit,
@@ -19,6 +20,7 @@ import {
   IconSettings,
   IconUsers,
   IconTrash,
+  IconUserOff,
 } from '@tabler/icons-react';
 import { useMemo, useState, useCallback, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -58,7 +60,7 @@ const NUM_OF_SCORE_COLS = scoreKeys.length + 1 + 1;
 function getScoreArray(archer: Archer): number[] {
   const scores: ArcherScores = getScores(archer);
   return scoreKeys.map(
-    (key) => scores[`score${key}` as keyof ArcherScores] ?? 0
+    (key) => scores[`score${key}` as keyof ArcherScores] ?? 0,
   );
 }
 
@@ -66,18 +68,18 @@ function isSameScore(
   total: number,
   scoreArray: number[],
   lastTotal: number,
-  lastScoreArray: number[]
+  lastScoreArray: number[],
 ): boolean {
   return (
     total === lastTotal &&
     scoreArray.every(
-      (value: number, index: number) => value === lastScoreArray[index]
+      (value: number, index: number) => value === lastScoreArray[index],
     )
   );
 }
 
 export const computeArcherRanks = (
-  sortedArchers: Archer[]
+  sortedArchers: Archer[],
 ): ArcherExtended[] => {
   let lastTotal = -1;
   let lastRank = 0;
@@ -121,7 +123,7 @@ const ArcherList = ({
   const [deletingRow, setDeletingRow] = useState<number | null>(null);
 
   const { mutate: updateScore } = useArchersUpdateScore(
-    selectedCompetition ?? 0
+    selectedCompetition ?? 0,
   );
   const { mutate: clearArcherScore } = useArcherClearScore();
   const { mutate: deleteArcher } = useDeleteArcher();
@@ -151,7 +153,7 @@ const ArcherList = ({
       progressBarDoing: t('progressBarDoing'),
       progressBarDone: t('progressBarDone'),
     }),
-    [t]
+    [t],
   );
 
   const getTranslation = (column: FilterableColumn, value: string): string => {
@@ -171,23 +173,23 @@ const ArcherList = ({
   const clubs: string[] = [
     'All',
     ...Array.from(
-      new Set(allArchers?.map((archer: Archer) => archer.club).filter(Boolean))
+      new Set(allArchers?.map((archer: Archer) => archer.club).filter(Boolean)),
     ),
   ];
 
   const archersWithScores: Archer[] = useMemo(() => {
     if (!allArchers) return [];
     return allArchers.filter((archer: Archer) =>
-      scoreKeys.some((key) => archer[`score${key}` as keyof Archer] !== null)
+      scoreKeys.some((key) => archer[`score${key}` as keyof Archer] !== null),
     );
   }, [allArchers]);
 
   const progress: number = useMemo(
     () =>
       Math.round(
-        (archersWithScores.length / (allArchers?.length || 1)) * 1000
+        (archersWithScores.length / (allArchers?.length || 1)) * 1000,
       ) / 10,
-    [archersWithScores.length, allArchers?.length]
+    [archersWithScores.length, allArchers?.length],
   );
 
   const {
@@ -200,14 +202,14 @@ const ArcherList = ({
     category ?? '',
     gender ?? '',
     ageGroup ?? '',
-    SORTING
+    SORTING,
   );
 
   const searchedArchers: Archer[] = useMemo(() => {
     if (!archersFiltered) return [];
     const term: string = searchTerm.toLowerCase();
     return archersFiltered.filter((archer: Archer) =>
-      `${archer.first_name} ${archer.last_name}`.toLowerCase().includes(term)
+      `${archer.first_name} ${archer.last_name}`.toLowerCase().includes(term),
     );
   }, [archersFiltered, searchTerm]);
 
@@ -222,7 +224,7 @@ const ArcherList = ({
 
   const rankedArchers: ArcherExtended[] = useMemo(
     () => computeArcherRanks(sortedArchers),
-    [sortedArchers]
+    [sortedArchers],
   );
 
   const handleSearchChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -235,6 +237,22 @@ const ArcherList = ({
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(progress);
+
+  if (!isLoadingArchers && (!allArchers || allArchers.length === 0)) {
+    return (
+      <Center mt={80}>
+        <Stack align='center' gap='xs'>
+          <IconUserOff size={48} color='var(--mantine-color-dimmed)' />
+          <Text size='lg' c='dimmed' fw={500}>
+            {t('noArchersInCompetition')}
+          </Text>
+          <Text size='sm' c='dimmed'>
+            {t('uploadArchers')}
+          </Text>
+        </Stack>
+      </Center>
+    );
+  }
 
   return (
     <MissingDataWrapper
@@ -258,7 +276,7 @@ const ArcherList = ({
           }
           value={searchTerm}
           onChange={handleSearchChange}
-          w={300}
+          w={250}
           size='sm'
         />
 
@@ -271,18 +289,21 @@ const ArcherList = ({
                   color={progress >= 100 ? '#4abe4a' : 'brand.4'}
                 />
               </Progress.Root>
-              <div style={{
-                position: 'absolute',
-                inset: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 700,
-                fontSize: 14,
-                color: '#fff',
-                textShadow: '0 0 4px rgba(0,0,0,0.7), 0 0 8px rgba(0,0,0,0.4)',
-                pointerEvents: 'none',
-              }}>
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 700,
+                  fontSize: 14,
+                  color: '#fff',
+                  textShadow:
+                    '0 0 4px rgba(0,0,0,0.7), 0 0 8px rgba(0,0,0,0.4)',
+                  pointerEvents: 'none',
+                }}
+              >
                 {progress >= 100
                   ? translations.progressBarDone
                   : `${translations.progressBarDoing} ${formattedProgress}%`}
@@ -291,15 +312,17 @@ const ArcherList = ({
           </div>
         </Tooltip>
 
-        <Tooltip label={translations.progressBarAbsNumberTooltip} position='bottom'>
+        <Tooltip
+          label={translations.progressBarAbsNumberTooltip}
+          position='bottom'
+        >
           <Paper
             px='sm'
             py={4}
             radius='md'
             style={{
-              backgroundColor: progress >= 100
-                ? '#d4f5d4'
-                : 'var(--mantine-color-brand-8)',
+              backgroundColor:
+                progress >= 100 ? '#d4f5d4' : 'var(--mantine-color-brand-8)',
               color: progress >= 100 ? '#1a1a1a' : '#f0f0f0',
             }}
           >
@@ -336,16 +359,28 @@ const ArcherList = ({
         >
           <Table.Thead>
             <Table.Tr>
-              <Table.Th rowSpan={2} style={{ width: 25, verticalAlign: 'middle' }}>
+              <Table.Th
+                rowSpan={2}
+                style={{ width: 25, verticalAlign: 'middle' }}
+              >
                 #
               </Table.Th>
-              <Table.Th rowSpan={2} style={{ width: 120, verticalAlign: 'middle' }}>
+              <Table.Th
+                rowSpan={2}
+                style={{ width: 120, verticalAlign: 'middle' }}
+              >
                 {translations.tableFirstName}
               </Table.Th>
-              <Table.Th rowSpan={2} style={{ width: 140, verticalAlign: 'middle' }}>
+              <Table.Th
+                rowSpan={2}
+                style={{ width: 140, verticalAlign: 'middle' }}
+              >
                 {translations.tableLastName}
               </Table.Th>
-              <Table.Th rowSpan={2} style={{ width: 150, verticalAlign: 'middle' }}>
+              <Table.Th
+                rowSpan={2}
+                style={{ width: 150, verticalAlign: 'middle' }}
+              >
                 <Stack gap={4}>
                   <span>{translations.tableClub}</span>
                   <SelectClub
@@ -356,7 +391,10 @@ const ArcherList = ({
                   />
                 </Stack>
               </Table.Th>
-              <Table.Th rowSpan={2} style={{ width: 120, verticalAlign: 'middle' }}>
+              <Table.Th
+                rowSpan={2}
+                style={{ width: 120, verticalAlign: 'middle' }}
+              >
                 <Stack gap={4}>
                   <span style={{ whiteSpace: 'pre-line' }}>
                     {translations.tableAgeGroup}
@@ -368,7 +406,10 @@ const ArcherList = ({
                   />
                 </Stack>
               </Table.Th>
-              <Table.Th rowSpan={2} style={{ width: 100, verticalAlign: 'middle' }}>
+              <Table.Th
+                rowSpan={2}
+                style={{ width: 100, verticalAlign: 'middle' }}
+              >
                 <Stack gap={4}>
                   <span>{translations.tableGender}</span>
                   <SelectGender
@@ -378,7 +419,10 @@ const ArcherList = ({
                   />
                 </Stack>
               </Table.Th>
-              <Table.Th rowSpan={2} style={{ width: 160, verticalAlign: 'middle' }}>
+              <Table.Th
+                rowSpan={2}
+                style={{ width: 160, verticalAlign: 'middle' }}
+              >
                 <Stack gap={4}>
                   <span>{translations.tableCategory}</span>
                   <SelectCategory
@@ -391,7 +435,17 @@ const ArcherList = ({
               <Table.Th colSpan={12} style={{ verticalAlign: 'middle' }}>
                 {translations.tableScore}
               </Table.Th>
-              <Table.Th rowSpan={2} style={{ width: 50, verticalAlign: 'middle' }}>
+              <Table.Th
+                style={{
+                  width: 50,
+                  verticalAlign: 'middle',
+                  position: 'sticky',
+                  right: 0,
+                  zIndex: 2,
+                  backgroundColor: '#2a4ecc',
+                  boxShadow: '-2px 0 4px rgba(0,0,0,0.15)',
+                }}
+              >
                 <IconSettings size={18} color='#f0f0f0' />
               </Table.Th>
             </Table.Tr>
@@ -405,6 +459,15 @@ const ArcherList = ({
                   {score}
                 </Table.Th>
               ))}
+              <Table.Th
+                style={{
+                  position: 'sticky',
+                  right: 0,
+                  zIndex: 2,
+                  backgroundColor: '#2a4ecc',
+                  boxShadow: '-2px 0 4px rgba(0,0,0,0.15)',
+                }}
+              />
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -412,14 +475,21 @@ const ArcherList = ({
               rankedArchers.map((archer: ArcherExtended) => {
                 const ageGroupText = getTranslation('age', archer.age_group);
                 const genderText = getTranslation('gender', archer.gender);
-                const categoryText = getTranslation('category', archer.category);
+                const categoryText = getTranslation(
+                  'category',
+                  archer.category,
+                );
                 return (
                   <Table.Tr
                     key={archer.id}
-                    style={archer.total >= 0 ? { backgroundColor: '#b3c1f2', color: '#1a1a1a' } : undefined}
+                    style={
+                      archer.total >= 0
+                        ? { backgroundColor: '#b3c1f2', color: '#1a1a1a' }
+                        : undefined
+                    }
                   >
                     <Table.Td>
-                      <Text fw={600} size='sm' c='dimmed'>
+                      <Text fw={600} size='sm'>
                         {archer.rank}
                       </Text>
                     </Table.Td>
@@ -436,18 +506,34 @@ const ArcherList = ({
                     </Table.Td>
                     {scoreKeys.map((points) => (
                       <Table.Td key={points}>
-                        <Text size='sm' c={
-                          (archer[`score${points}` as keyof ArcherScores] ?? 0) > 0
-                            ? undefined
-                            : 'dimmed'
-                        }>
-                          {(archer[`score${points}` as keyof ArcherScores] ?? 0) > 0
+                        <Text
+                          size='sm'
+                          c={
+                            (archer[`score${points}` as keyof ArcherScores] ??
+                              0) > 0
+                              ? undefined
+                              : 'dimmed'
+                          }
+                        >
+                          {(archer[`score${points}` as keyof ArcherScores] ??
+                            0) > 0
                             ? archer[`score${points}` as keyof ArcherScores]
                             : ''}
                         </Text>
                       </Table.Td>
                     ))}
-                    <Table.Td>
+                    <Table.Td
+                      style={{
+                        position: 'sticky',
+                        right: 0,
+                        backgroundColor:
+                          archer.total >= 0
+                            ? '#b3c1f2'
+                            : 'var(--mantine-color-body)',
+                        zIndex: 1,
+                        boxShadow: '-2px 0 4px rgba(0,0,0,0.08)',
+                      }}
+                    >
                       <Menu position='bottom-end' withArrow shadow='sm'>
                         <Menu.Target>
                           <ActionIcon
@@ -455,24 +541,46 @@ const ArcherList = ({
                             color='brand'
                             size='md'
                           >
-                            <IconDots size={20} color={archer.total >= 0 ? '#fff' : undefined} />
+                            <IconDots
+                              size={20}
+                              color={archer.total >= 0 ? '#fff' : undefined}
+                            />
                           </ActionIcon>
                         </Menu.Target>
                         <Menu.Dropdown>
                           <Menu.Item
-                            leftSection={<IconEdit size={16} color='light-dark(var(--mantine-color-brand-5), var(--mantine-color-brand-2))' />}
+                            leftSection={
+                              <IconEdit
+                                size={16}
+                                color='light-dark(var(--mantine-color-brand-5), var(--mantine-color-brand-2))'
+                              />
+                            }
                             onClick={() => setEditingRow(archer.id)}
                           >
-                            <Text size='sm' style={{ color: 'light-dark(var(--mantine-color-brand-5), var(--mantine-color-brand-2))' }}>
+                            <Text
+                              size='sm'
+                              style={{
+                                color:
+                                  'light-dark(var(--mantine-color-brand-5), var(--mantine-color-brand-2))',
+                              }}
+                            >
                               {translations.tableEditButton}
                             </Text>
                           </Menu.Item>
                           <Divider my={4} />
                           <Menu.Item
-                            leftSection={<IconTrash size={16} color='#F54242' />}
+                            leftSection={
+                              <IconTrash
+                                size={16}
+                                color='var(--mantine-color-red-6)'
+                              />
+                            }
                             onClick={() => setDeletingRow(archer.id)}
                           >
-                            <Text size='sm' c='red'>
+                            <Text
+                              size='sm'
+                              style={{ color: 'var(--mantine-color-red-6)' }}
+                            >
                               {translations.tableDeleteButton}
                             </Text>
                           </Menu.Item>

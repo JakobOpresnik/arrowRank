@@ -1,5 +1,6 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const { spawn } = require('child_process');
 const axios = require('axios');
 const url = require('url');
@@ -56,6 +57,25 @@ function createWindow() {
 
   win.on('closed', stopBackend);
 }
+
+ipcMain.handle('save-excel-file', async (_event, buffer, filename) => {
+  const defaultDir = path.join(app.getPath('documents'), 'ArrowRank');
+  if (!fs.existsSync(defaultDir)) {
+    fs.mkdirSync(defaultDir, { recursive: true });
+  }
+  const { filePath, canceled } = await dialog.showSaveDialog({
+    title: 'Save Report',
+    defaultPath: path.join(defaultDir, filename),
+    filters: [{ name: 'Excel Files', extensions: ['xlsx'] }],
+  });
+  if (canceled || !filePath) return null;
+  fs.writeFileSync(filePath, Buffer.from(buffer));
+  return filePath;
+});
+
+ipcMain.handle('open-file-location', (_event, filePath) => {
+  shell.showItemInFolder(filePath);
+});
 
 app.whenReady().then(async () => {
   // pick backend path depending on dev or packaged build

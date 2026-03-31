@@ -23,8 +23,9 @@ export const fetchCompetitions = async (): Promise<Competition[]> => {
 
 export const createCompetition = async (
   data: CompetitionCreate
-): Promise<void> => {
-  if (!data.name || !data.date || !data.location) return;
+): Promise<Competition> => {
+  if (!data.name || !data.date || !data.location)
+    throw new Error('Missing required fields');
   const formData = new FormData();
   formData.append('name', data.name);
   formData.append('date', data.date);
@@ -41,6 +42,27 @@ export const createCompetition = async (
   if (!res.ok) {
     const errorData = await res.json();
     throw new Error(errorData.message || 'Competition creation failed');
+  }
+  return res.json() as Promise<Competition>;
+};
+
+export const deleteCompetition = async (competitionId: number): Promise<void> => {
+  const res: Response = await fetch(`${BE_BASE_URL}/competitions/${competitionId}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.message || 'Failed to delete competition');
+  }
+};
+
+export const deleteAllCompetitions = async (): Promise<void> => {
+  const res: Response = await fetch(`${BE_BASE_URL}/competitions`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.message || 'Failed to delete competitions');
   }
 };
 

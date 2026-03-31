@@ -28,7 +28,7 @@ STEP 2.5: (CRITICAL - easy to forget)
 copy the freshly built backend.exe into the electron folder
 (this is what actually gets bundled into the installer)
 
-> cp /backend/dist/backend.exe /electron/backend/backend.exe
+> cp backend/dist/backend.exe electron/backend/backend.exe
 
 =======================================================================
 STEP 3:

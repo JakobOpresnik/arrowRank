@@ -109,7 +109,7 @@ const AddScore = ({
     scoreSum === TARGET_TOTAL_SCORE
       ? t('addScores').toUpperCase()
       : doesExceedTargetScore
-      ? `${t('addScoresExceeds').toUpperCase()} ${TARGET_TOTAL_SCORE}`
+      ? `${t('addScoresExceeds').toUpperCase()} ${TARGET_TOTAL_SCORE} (+${scoreSum - TARGET_TOTAL_SCORE})`
       : `${scoreSum} / ${TARGET_TOTAL_SCORE}`;
 
   // Build archer select data - disable those who already have scores

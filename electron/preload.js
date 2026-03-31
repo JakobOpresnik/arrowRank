@@ -1,7 +1,11 @@
-const { contextBridge } = require('electron');
+const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronApi', {
   isElectron: true,
   platform: process.platform,
   env: process.env.NODE_ENV,
+  saveExcelFile: (buffer, filename) =>
+    ipcRenderer.invoke('save-excel-file', buffer, filename),
+  openFileLocation: (filePath) =>
+    ipcRenderer.invoke('open-file-location', filePath),
 });

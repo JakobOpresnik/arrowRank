@@ -163,6 +163,8 @@ export interface ModalWrapperProps {
   children: ReactNode;
   actions?: ReactNode;
   maxWidth?: number;
+  padding?: string | number;
+  footerMt?: string | number;
 }
 
 export type OnCloseReason = 'backdropClick' | 'escapeKeyDown' | 'closeClick';

@@ -14,6 +14,8 @@ const ConfirmClearScores = ({
       open={open}
       onClose={onClose}
       title={t('clearScoresDialogTitle')}
+      padding='xl'
+      footerMt='xl'
       actions={
         <>
           <Button variant='default' onClick={onClose}>

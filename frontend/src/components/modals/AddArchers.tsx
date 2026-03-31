@@ -1,6 +1,6 @@
 import { Select, Stack, Text, TextInput, Button, Tabs, Group } from '@mantine/core';
 import UploadArchers from '../UploadArchers';
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   IconTrophy,
@@ -20,16 +20,21 @@ import { ModalWrapper } from './ModalWrapper';
 interface AddArchersProps {
   open: boolean;
   onClose: () => void;
+  selectedCompetitionId?: number | null;
 }
 
-const AddArchers = ({ open, onClose }: AddArchersProps) => {
+const AddArchers = ({ open, onClose, selectedCompetitionId }: AddArchersProps) => {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
 
   const { mutate: createArcher } = useAddArcher();
   const [selectedCompetition, setSelectedCompetition] = useState<number | null>(
-    null
+    selectedCompetitionId ?? null
   );
+
+  useEffect(() => {
+    if (open) setSelectedCompetition(selectedCompetitionId ?? null);
+  }, [open, selectedCompetitionId]);
 
   const [firstName, setFirstName] = useState<string | null>(null);
   const [lastName, setLastName] = useState<string | null>(null);
@@ -144,6 +149,7 @@ const AddArchers = ({ open, onClose }: AddArchersProps) => {
               name='competition'
               placeholder={t('selectCompetition')}
               data={competitionData}
+              value={selectedCompetition ? String(selectedCompetition) : null}
               leftSection={<IconTrophy size={18} />}
               onChange={(value) =>
                 setSelectedCompetition(value ? Number(value) : null)
@@ -203,6 +209,7 @@ const AddArchers = ({ open, onClose }: AddArchersProps) => {
                 label={t('competition')}
                 placeholder={t('selectCompetitionToJoin')}
                 data={competitionData}
+                value={selectedCompetition ? String(selectedCompetition) : null}
                 leftSection={<IconTrophy size={18} />}
                 onChange={(value) =>
                   setSelectedCompetition(value ? Number(value) : null)
