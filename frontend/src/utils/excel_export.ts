@@ -286,7 +286,7 @@ const exportTableToExcel = async (
       // Use fixed pixel size so the organizer logo isn't distorted regardless of column widths
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ws.addImage(id, {
-        tl: { col: 0.1, row: imgTlRow },
+        tl: { col: TOTAL_COLS - 3, row: imgTlRow },
         ext: { width: 110, height: 80 },
       } as any);
     }
