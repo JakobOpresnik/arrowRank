@@ -127,7 +127,8 @@ async function fetchLogoBuffer(logoUrl: string): Promise<ArrayBuffer | null> {
     const binary = atob(data);
     const buffer = new ArrayBuffer(binary.length);
     const view = new Uint8Array(buffer);
-    for (let i = 0; i < binary.length; i++) view[i] = binary.charCodeAt(i);
+    for (let i = 0; i < binary.length; i++)
+      view[i] = binary.codePointAt(i) ?? 0;
     return buffer;
   } catch {
     return null;
@@ -143,23 +144,23 @@ function applyWhite(cell: ExcelJS.Cell) {
 // ── Group ordering ────────────────────────────────────────────────────────────
 
 const CATEGORY_PRIORITY: Record<string, number> = {
-  'barebow': 0,
+  barebow: 0,
   'long bow': 1,
   'traditional bow': 2,
   'primitive bow': 3,
-  'guest': 4,
+  guest: 4,
 };
 
 const AGE_GROUP_PRIORITY: Record<string, number> = {
-  'u11': 0,
-  'u16': 1,
-  'adults': 2,
+  u11: 0,
+  u16: 1,
+  adults: 2,
 };
 
 const GENDER_PRIORITY: Record<string, number> = {
-  'female': 0,
-  'male': 1,
-  'mixed': 2,
+  female: 0,
+  male: 1,
+  mixed: 2,
 };
 
 /** Stable-sorts archers so groups appear in (category → age group → gender) order.
@@ -210,12 +211,12 @@ const exportTableToExcel = async (
   };
 
   ws.columns = [
-    { width: 5 },  // A rank
+    { width: 5 }, // A rank
     { width: 24 }, // B name
     { width: 20 }, // C club
-    { width: 8 },  // D total
+    { width: 8 }, // D total
     ...scoreKeys.map(() => ({ width: 5 })), // E–N scores (10 × 5 = 50)
-    ...Array(FILL_COLS - TOTAL_COLS).fill({ width: 8 }), // extra white cols
+    ...new Array(FILL_COLS - TOTAL_COLS).fill({ width: 8 }), // extra white cols
   ];
 
   let r = 1; // 1-indexed
@@ -228,22 +229,14 @@ const exportTableToExcel = async (
   const headerImageStartRow = r; // used for image placement
 
   if (competition) {
-    // const orgLine = competition.organizer
-    //   ? competition.organizer
-    //   : competition.name;
-
-    // const orgCell = ws.getCell(r, HDR_TEXT_START);
-    // orgCell.value = orgLine;
-    // orgCell.font = { name: 'Calibri', size: 13, color: { argb: BLACK } };
-    // orgCell.fill = whiteFill;
-    // orgCell.alignment = { horizontal: 'center', vertical: 'middle' };
-    // ws.mergeCells(r, HDR_TEXT_START, r, HDR_TEXT_END);
-    // ws.getRow(r).height = 22;
-    // r++;
-
     const titleCell = ws.getCell(r, HDR_TEXT_START);
     titleCell.value = 'Pokal tradicionalnih lokov';
-    titleCell.font = { name: 'Calibri', size: 13, bold: true, color: { argb: BLACK } };
+    titleCell.font = {
+      name: 'Calibri',
+      size: 13,
+      bold: true,
+      color: { argb: BLACK },
+    };
     titleCell.fill = whiteFill;
     titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
     ws.mergeCells(r, HDR_TEXT_START, r, HDR_TEXT_END);
@@ -269,21 +262,16 @@ const exportTableToExcel = async (
     r++;
   }
 
-  const headerImageEndRow = r; // exclusive
-
   // ── Logos (tl/br are 0-indexed in exceljs image API) ─────────────────────
   const imgTlRow = headerImageStartRow - 1;
-  const imgBrRow = headerImageEndRow - 1;
 
   const ptlBuffer = await fetchBuffer(ptlLogoUrl);
   if (ptlBuffer) {
     const id = wb.addImage({ buffer: ptlBuffer, extension: 'png' });
-    // PTL logo is 247×322 portrait; span 2.5 score cols for a bit more width
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ws.addImage(id, {
-      tl: { col: TOTAL_COLS - 1.7, row: imgTlRow },
-      br: { col: TOTAL_COLS, row: imgBrRow },
-      editAs: 'oneCell',
+      tl: { col: 0.9, row: imgTlRow },
+      ext: { width: 60, height: 75 },
     } as any);
   }
 
@@ -336,7 +324,7 @@ const exportTableToExcel = async (
 
   // ── Empty rows after title ─────────────────────────────────────────────────
   for (let i = 0; i < 2; i++) {
-    ws.getRow(r).height = 8;
+    ws.getRow(r).height = 14;
     r++;
   }
 
@@ -350,7 +338,9 @@ const exportTableToExcel = async (
     ...scoreKeys,
   ];
 
-  for (const [label, groupArchers] of groups) {
+  const groupEntries = [...groups];
+  for (const [label, groupArchers] of groupEntries) {
+    const isLastGroup = label === groupEntries[groupEntries.length - 1][0];
     // Category header
     const catCell = ws.getCell(r, 1);
     catCell.value = label;
@@ -362,12 +352,12 @@ const exportTableToExcel = async (
     };
     catCell.fill = whiteFill;
     catCell.alignment = { horizontal: 'center', vertical: 'middle' };
-    catCell.border = { bottom: thinLine };
+    catCell.border = { top: thinLine, bottom: thinLine };
     ws.mergeCells(r, 1, r, TOTAL_COLS);
     for (let c = 2; c <= TOTAL_COLS; c++) {
       const mc = ws.getCell(r, c);
       mc.fill = whiteFill;
-      mc.border = { bottom: thinLine };
+      mc.border = { top: thinLine, bottom: thinLine };
     }
     r++;
 
@@ -427,7 +417,7 @@ const exportTableToExcel = async (
       r++;
     });
 
-    ws.getRow(r).height = 10;
+    ws.getRow(r).height = 26;
     r++;
   }
 
@@ -439,13 +429,13 @@ const exportTableToExcel = async (
   }
 
   // ── Restrict print area to data columns only (A–N) so fitToWidth ignores the extra white fill columns ──
-  const lastColLetter = String.fromCharCode(64 + TOTAL_COLS); // 14 → 'N'
+  const lastColLetter = String.fromCodePoint(64 + TOTAL_COLS); // 14 → 'N'
   ws.pageSetup.printArea = `A1:${lastColLetter}${r - 1}`;
 
   // ── Save ───────────────────────────────────────────────────────────────────
   const buf = await wb.xlsx.writeBuffer();
   const filename = competition
-    ? `${competition.name}_rezultati.xlsx`
+    ? `${competition.name}_${competition.date.slice(0, 10)}_rezultati.xlsx`
     : 'rezultati.xlsx';
 
   if (window.electronApi?.saveExcelFile) {
