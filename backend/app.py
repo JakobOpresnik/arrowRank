@@ -191,15 +191,33 @@ def upload_data_into_db(
         # reset cursor — starlette may leave it at end after writing to SpooledTemporaryFile
         file.file.seek(0)
 
-        # read uploaded CSV file; utf-8-sig strips BOM if present
+        # read uploaded CSV file; try encodings in order of likelihood
         raw: bytes = file.file.read()
-        try:
-            content_str: str = raw.decode('utf-8-sig')
-        except UnicodeDecodeError:
-            content_str = raw.decode('latin-1')
+        content_str: str = ''
+        for encoding in ['utf-8-sig', 'cp1250', 'latin-1']:
+            try:
+                content_str = raw.decode(encoding)
+                break
+            except (UnicodeDecodeError, ValueError):
+                continue
+
+        # fix double-encoded UTF-8: data was UTF-8 but got misread as cp1250
+        # then re-saved as UTF-8, producing garbled chars (e.g. Š→Ĺ , č→ÄŤ)
+        # reverse line-by-line so one bad char doesn't block the entire fix
+        if not any(c in content_str for c in 'čšžČŠŽ'):
+            fixed_lines = []
+            for line in content_str.splitlines():
+                try:
+                    fixed_lines.append(line.encode('cp1250').decode('utf-8'))
+                except (UnicodeDecodeError, UnicodeEncodeError):
+                    fixed_lines.append(line)
+            candidate = '\n'.join(fixed_lines)
+            if any(c in candidate for c in 'čšžČŠŽ'):
+                content_str = candidate
 
         content: List[str] = content_str.splitlines()
-        reader: DictReader[str] = DictReader(content)
+        delimiter = ';' if content and ';' in content[0] else ','
+        reader: DictReader[str] = DictReader(content, delimiter=delimiter)
 
         print("processing CSV rows...")
 
