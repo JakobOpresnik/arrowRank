@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { Button, Text, TextInput, Code, Divider } from '@mantine/core';
+import { useState, useEffect, type FormEvent } from 'react';
+import { Button, Text, TextInput, Code, Divider, ThemeIcon, Group } from '@mantine/core';
+import { IconAlertTriangle } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { ModalWrapper } from './ModalWrapper';
 
@@ -21,35 +22,50 @@ const ConfirmDeleteAllArchers = ({ open, archerCount, competitionName, onClose, 
 
   const confirmed = value === competitionName;
 
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (confirmed) onDelete();
+  };
+
   return (
     <ModalWrapper
       open={open}
       onClose={onClose}
-      title={t('deleteAllArchersDialogTitle')}
+      title={
+        <Group gap='xs'>
+          <ThemeIcon color='red' variant='light' size='md'>
+            <IconAlertTriangle size={16} />
+          </ThemeIcon>
+          {t('deleteAllArchersDialogTitle')}
+        </Group>
+      }
       padding='xl'
       footerMt='xl'
       actions={
         <>
-          <Button variant='default' onClick={onClose}>
+          <Button type='button' variant='default' onClick={onClose}>
             {t('cancelButton')}
           </Button>
-          <Button color='red' disabled={!confirmed} onClick={onDelete}>
+          <Button type='submit' form='confirm-delete-all-archers' color='red' disabled={!confirmed}>
             {t('deleteButton')}
           </Button>
         </>
       }
     >
-      <Text>{t('deleteAllArchersDialogContent1', { count: archerCount })}</Text>
-      <Text mt='xs'>{t('deleteAllArchersDialogContent2')}</Text>
-      <Divider my='md' />
-      <Text size='sm' mb={4}>{t('deleteAllArchersConfirmLabel')} <Code>{competitionName}</Code></Text>
-      <TextInput
-        value={value}
-        onChange={(e) => setValue(e.currentTarget.value)}
-        onPaste={(e) => e.preventDefault()}
-        placeholder={competitionName}
-        error={value.length > 0 && !confirmed}
-      />
+      <form id='confirm-delete-all-archers' onSubmit={handleSubmit}>
+        <Text>{t('deleteAllArchersDialogContent1', { count: archerCount })}</Text>
+        <Text mt='xs'>{t('deleteAllArchersDialogContent2')}</Text>
+        <Divider my='md' />
+        <Text size='sm' mb={4}>{t('deleteAllArchersConfirmLabel')} <Code>{competitionName}</Code></Text>
+        <TextInput
+          value={value}
+          onChange={(e) => setValue(e.currentTarget.value)}
+          onPaste={(e) => e.preventDefault()}
+          onCopy={(e) => e.preventDefault()}
+          error={value.length > 0 && !confirmed}
+          data-autofocus
+        />
+      </form>
     </ModalWrapper>
   );
 };
