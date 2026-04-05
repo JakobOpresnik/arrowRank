@@ -124,8 +124,9 @@ function App() {
 
   const areAnyFiltersApplied: boolean = useMemo(
     () =>
-      !!clubFilter || !!categoryFilter || !!genderFilter || !!ageGroupFilter,
-    [clubFilter, categoryFilter, genderFilter, ageGroupFilter],
+      !!selectedCompetition &&
+      (!!clubFilter || !!categoryFilter || !!genderFilter || !!ageGroupFilter),
+    [selectedCompetition, clubFilter, categoryFilter, genderFilter, ageGroupFilter],
   );
 
   const areAnyScoresPresent: boolean = useMemo(() => {
