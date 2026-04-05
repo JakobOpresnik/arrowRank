@@ -1,6 +1,6 @@
 import { Select, Stack, Text, TextInput, Button, Tabs, Group } from '@mantine/core';
 import UploadArchers from '../UploadArchers';
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   IconTrophy,
@@ -43,6 +43,7 @@ const AddArchers = ({ open, onClose, selectedCompetitionId }: AddArchersProps) =
   const [category, setCategory] = useState<string | null>(null);
   const [ageGroup, setAgeGroup] = useState<string | null>(null);
   const [gender, setGender] = useState<string | null>(null);
+  const firstNameRef = useRef<HTMLInputElement>(null);
 
   const { data: competitions } = useCompetitions();
 
@@ -115,8 +116,8 @@ const AddArchers = ({ open, onClose, selectedCompetitionId }: AddArchersProps) =
   };
 
   const isGenderSelectDisabled: boolean = useMemo(
-    () => ageGroup === 'U11',
-    [ageGroup]
+    () => ageGroup === 'U11' || (ageGroup === 'U16' && category === 'long bow'),
+    [ageGroup, category]
   );
 
   return (
@@ -126,7 +127,9 @@ const AddArchers = ({ open, onClose, selectedCompetitionId }: AddArchersProps) =
       title={t('addArchers')}
       maxWidth={520}
     >
-      <Tabs defaultValue='upload'>
+      <Tabs defaultValue='upload' onChange={(tab) => {
+        if (tab === 'manual') setTimeout(() => firstNameRef.current?.focus(), 0);
+      }}>
         <Tabs.List grow>
           <Tabs.Tab
             value='upload'
@@ -170,6 +173,7 @@ const AddArchers = ({ open, onClose, selectedCompetitionId }: AddArchersProps) =
             <Stack gap='lg'>
               <Group grow gap='md'>
                 <TextInput
+                  ref={firstNameRef}
                   label={t('firstName')}
                   placeholder={t('enterFirstName')}
                   value={firstName ?? ''}
@@ -222,7 +226,12 @@ const AddArchers = ({ open, onClose, selectedCompetitionId }: AddArchersProps) =
                   placeholder={t('selectBowCategory')}
                   data={categoryData}
                   leftSection={<IconCategory size={18} />}
-                  onChange={(value) => setCategory(value)}
+                  onChange={(value) => {
+                    setCategory(value);
+                    if (value === 'long bow' && ageGroup === 'U16') {
+                      setGender('mixed');
+                    }
+                  }}
                   required
                 />
                 <Select
@@ -234,6 +243,9 @@ const AddArchers = ({ open, onClose, selectedCompetitionId }: AddArchersProps) =
                   onChange={(value) => {
                     setAgeGroup(value);
                     if (value === 'U11') {
+                      setGender('mixed');
+                    }
+                    if (value === 'U16' && category === 'long bow') {
                       setGender('mixed');
                     }
                   }}

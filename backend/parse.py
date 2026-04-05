@@ -33,5 +33,7 @@ def parse_category(category_value: str):
         gender = Gender.MIXED
     if "u16" in category_value:
         age_group = AgeGroup.U16
+        if category == Category.LONG_BOW:
+            gender = Gender.MIXED
     
     return category, gender, age_group

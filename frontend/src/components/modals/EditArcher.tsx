@@ -1,5 +1,6 @@
 import {
   useState,
+  useRef,
   type ChangeEvent,
   type FormEvent,
   useMemo,
@@ -79,10 +80,14 @@ const EditArcher = ({
 
   const [shouldDisableGenderSelect, setShouldDisableGenderSelect] =
     useState<boolean>(false);
+  const clubInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setScores(initializeScores(archerToEdit));
     setScoresChanged(false);
+    if (archerToEdit) {
+      setTimeout(() => clubInputRef.current?.focus(), 50);
+    }
   }, [archerToEdit]);
 
   const handleSubmit = (event: FormEvent<Element>): void => {
@@ -274,6 +279,7 @@ const EditArcher = ({
             </div>
 
             <TextInput
+              ref={clubInputRef}
               label={t('club')}
               placeholder={t('club')}
               defaultValue={archerToEdit.club}
@@ -295,9 +301,16 @@ const EditArcher = ({
                 if (archerToEdit) {
                   archerToEdit.category = value as string;
                 }
-                setShouldDisableGenderSelect(
-                  archerToEdit?.age_group === 'U11'
-                );
+                const currentAgeGroup = archerToEdit?.age_group;
+                if (currentAgeGroup === 'U11') {
+                  setShouldDisableGenderSelect(true);
+                } else if (currentAgeGroup === 'U16' && value === 'long bow') {
+                  setShouldDisableGenderSelect(true);
+                  setGenderChange(true);
+                  archerToEdit.gender = 'mixed';
+                } else {
+                  setShouldDisableGenderSelect(false);
+                }
               }}
             />
             <Select
@@ -318,6 +331,11 @@ const EditArcher = ({
                 }
                 setShouldDisableGenderSelect(false);
                 if (value === 'U11') {
+                  setGenderChange(true);
+                  setShouldDisableGenderSelect(true);
+                  archerToEdit.gender = 'mixed';
+                }
+                if (value === 'U16' && archerToEdit?.category === 'long bow') {
                   setGenderChange(true);
                   setShouldDisableGenderSelect(true);
                   archerToEdit.gender = 'mixed';
