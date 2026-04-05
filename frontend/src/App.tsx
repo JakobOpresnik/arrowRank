@@ -42,13 +42,13 @@ import {
 import { useArchersClearScores } from './hooks/useArchersClearScores';
 import { useArchersUpdateScore } from './hooks/useArchersUpdateScore';
 import { useDeleteAllArchers } from './hooks/useDeleteAllArchers';
-import { useDeleteAllCompetitions } from './hooks/useDeleteAllCompetitions';
+import { useDeleteCompetition } from './hooks/useDeleteCompetition';
 import { exportTableToExcel } from './utils/excel_export';
 import { useFilterStore } from './stores/useFilterStore';
 import { useCompetitionStore } from './stores/useCompetitionStore';
 import ConfirmClearScores from './components/modals/ConfirmClearScores';
 import ConfirmDeleteAllArchers from './components/modals/ConfirmDeleteAllArchers';
-import ConfirmDeleteAllCompetitions from './components/modals/ConfirmDeleteAllCompetitions';
+import ConfirmDeleteCompetition from './components/modals/ConfirmDeleteCompetition';
 import PtlLogo from './assets/ptl_logo.png';
 import { useTranslation } from 'react-i18next';
 import SelectLanguage from './components/SelectLanguage';
@@ -70,7 +70,7 @@ function App() {
   const [isOpenClearScores, setIsOpenClearScores] = useState<boolean>(false);
   const [isOpenAddLogo, setIsOpenAddLogo] = useState<boolean>(false);
   const [isOpenDeleteAllArchers, setIsOpenDeleteAllArchers] = useState<boolean>(false);
-  const [isOpenDeleteAllCompetitions, setIsOpenDeleteAllCompetitions] = useState<boolean>(false);
+  const [isOpenDeleteCompetition, setIsOpenDeleteCompetition] = useState<boolean>(false);
 
   const {
     clubFilter,
@@ -115,7 +115,7 @@ function App() {
   const { mutate: deleteAllArchers } = useDeleteAllArchers(
     selectedCompetition?.id ?? 0,
   );
-  const { mutate: deleteAllCompetitions } = useDeleteAllCompetitions();
+  const { mutate: deleteCompetition } = useDeleteCompetition();
 
   const archersDataExists: boolean = useMemo(
     () => !!archers && archers.length > 0,
@@ -394,13 +394,13 @@ function App() {
                 </ActionIcon>
               </Tooltip>
             )}
-            {competitions && competitions.length > 0 && (
-              <Tooltip label={t('deleteAllCompetitionsTooltip')} position='top'>
+            {selectedCompetition && (
+              <Tooltip label={t('deleteCompetitionTooltip')} position='top'>
                 <ActionIcon
                   variant='filled'
                   style={{ backgroundColor: '#7B1010', color: '#fff' }}
                   size='lg'
-                  onClick={() => setIsOpenDeleteAllCompetitions(true)}
+                  onClick={() => setIsOpenDeleteCompetition(true)}
                 >
                   <IconTrashX size={18} />
                 </ActionIcon>
@@ -489,14 +489,16 @@ function App() {
         }}
       />
 
-      <ConfirmDeleteAllCompetitions
-        open={isOpenDeleteAllCompetitions}
-        hasArchers={(archers?.length ?? 0) > 0}
-        onClose={() => setIsOpenDeleteAllCompetitions(false)}
+      <ConfirmDeleteCompetition
+        open={isOpenDeleteCompetition}
+        competitionName={selectedCompetition?.name ?? ''}
+        onClose={() => setIsOpenDeleteCompetition(false)}
         onDelete={() => {
-          deleteAllCompetitions();
-          setSelectedCompetition(null);
-          setIsOpenDeleteAllCompetitions(false);
+          if (!selectedCompetition) return;
+          const nextCompetition = competitions?.find((c) => c.id !== selectedCompetition.id) ?? null;
+          deleteCompetition(selectedCompetition.id);
+          setSelectedCompetition(nextCompetition);
+          setIsOpenDeleteCompetition(false);
         }}
       />
     </div>

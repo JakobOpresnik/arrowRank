@@ -56,15 +56,6 @@ export const deleteCompetition = async (competitionId: number): Promise<void> =>
   }
 };
 
-export const deleteAllCompetitions = async (): Promise<void> => {
-  const res: Response = await fetch(`${BE_BASE_URL}/competitions`, {
-    method: 'DELETE',
-  });
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(errorData.message || 'Failed to delete competitions');
-  }
-};
 
 export const uploadCompetitionLogo = async (
   update: CompetitionLogoUpload
