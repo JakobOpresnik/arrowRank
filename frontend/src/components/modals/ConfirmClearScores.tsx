@@ -1,3 +1,4 @@
+import { type FormEvent } from 'react';
 import { Button, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { ClearScoresDialogProps } from '../../types';
@@ -9,6 +10,12 @@ const ConfirmClearScores = ({
   onClear,
 }: ClearScoresDialogProps) => {
   const { t } = useTranslation();
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    onClear();
+  };
+
   return (
     <ModalWrapper
       open={open}
@@ -18,17 +25,19 @@ const ConfirmClearScores = ({
       footerMt='xl'
       actions={
         <>
-          <Button variant='default' onClick={onClose}>
+          <Button type='button' variant='default' onClick={onClose}>
             {t('cancelButton')}
           </Button>
-          <Button color='red' onClick={onClear}>
+          <Button type='submit' form='confirm-clear-scores' color='red'>
             {t('clearButton')}
           </Button>
         </>
       }
     >
-      <Text>{t('clearScoresDialogContent1')}</Text>
-      <Text>{t('clearScoresDialogContent2')}</Text>
+      <form id='confirm-clear-scores' onSubmit={handleSubmit}>
+        <Text>{t('clearScoresDialogContent1')}</Text>
+        <Text>{t('clearScoresDialogContent2')}</Text>
+      </form>
     </ModalWrapper>
   );
 };

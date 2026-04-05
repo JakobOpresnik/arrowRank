@@ -1,4 +1,4 @@
-import { useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import {
   Button,
   Stack,
@@ -11,7 +11,7 @@ import {
 } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import { IconMapPin, IconX, IconPhoto } from '@tabler/icons-react';
-import dayjs from 'dayjs';
+import dayjs, { type Dayjs } from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { BE_BASE_URL } from '../../constants';
 import { useAddCompetition } from '../../hooks/useAddCompetition';
@@ -43,6 +43,20 @@ const CreateCompetition = ({
   const [logoFile, setLogoFile] = useState<File | null>(null);
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [datePickerOpened, setDatePickerOpened] = useState<boolean>(false);
+  const dateJustSelected = useRef(false);
+
+  useEffect(() => {
+    if (open && !isLogoUploadOnly) {
+      setName('');
+      setDate('');
+      setLocation('');
+      setLogo(null);
+      setLogoFile(null);
+      setIsSubmitting(false);
+      setDatePickerOpened(false);
+    }
+  }, [open, isLogoUploadOnly]);
 
   const { mutate: createCompetition } = useAddCompetition();
   const { mutate: uploadCompetitionLogo } = useUploadCompetitionLogo(
@@ -162,7 +176,7 @@ const CreateCompetition = ({
                 value={name}
                 onChange={(e) => setName(e.currentTarget.value)}
                 required
-                autoFocus
+                data-autofocus
                 error={
                   isSubmitting && name.length < 5
                     ? t('competitionNameError')
@@ -176,9 +190,44 @@ const CreateCompetition = ({
                 onChange={(value) => {
                   if (value) setDate(dayjs(value).format('YYYY-MM-DD'));
                   else setDate('');
+                  dateJustSelected.current = true;
+                  setDatePickerOpened(false);
                 }}
                 required
                 locale='sl'
+                getDayProps={(d) => {
+                  const isToday = dayjs(d).isSame(dayjs() as Dayjs, 'day');
+                  const day = dayjs(d).day();
+                  const isWeekend = day === 0 || day === 6;
+                  const todayStyle = isToday
+                    ? { position: 'relative' as const }
+                    : {};
+                  const weekendStyle = isWeekend
+                    ? {
+                        '--mantine-primary-color-filled': 'var(--mantine-color-red-6)',
+                        '--mantine-primary-color-filled-hover': 'var(--mantine-color-red-7)',
+                      }
+                    : {};
+                  return {
+                    ...(isToday && { 'data-autofocus': true, className: 'today-dot' }),
+                    ...((isToday || isWeekend) && {
+                      style: { ...todayStyle, ...weekendStyle } as React.CSSProperties,
+                    }),
+                  };
+                }}
+                popoverProps={{
+                  opened: datePickerOpened,
+                  returnFocus: true,
+                  onClose: () => setDatePickerOpened(false),
+                }}
+                onFocus={() => {
+                  if (dateJustSelected.current) {
+                    dateJustSelected.current = false;
+                    return;
+                  }
+                  setDatePickerOpened(true);
+                }}
+                onClick={() => setDatePickerOpened(true)}
               />
               <TextInput
                 label={t('location')}

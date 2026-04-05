@@ -3,7 +3,7 @@ import { DeleteArcherProps, DeletionAction } from '../../types';
 import { Button, Stack, Text, Radio, Paper, Group } from '@mantine/core';
 import { ModalWrapper } from './ModalWrapper';
 import { IconTrash, IconX } from '@tabler/icons-react';
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 
 const DeleteArcher = ({
   open,
@@ -31,12 +31,17 @@ const DeleteArcher = ({
     close();
   };
 
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (canDeleteAnything) handleDelete();
+  };
+
   const ModalActions = (
     <>
-      <Button variant='default' onClick={close}>
+      <Button type='button' variant='default' onClick={close}>
         {t('cancelButton')}
       </Button>
-      <Button color='red' onClick={handleDelete} disabled={!canDeleteAnything}>
+      <Button type='submit' form='delete-archer-form' color='red' disabled={!canDeleteAnything}>
         {t('tableDeleteButton')}
       </Button>
     </>
@@ -50,84 +55,86 @@ const DeleteArcher = ({
       actions={ModalActions}
       maxWidth={400}
     >
-      <Stack gap='md'>
-        <Text size='sm' c='dimmed'>{t('chooseDeletionOption')}</Text>
-        <Radio.Group
-          value={selectedOption ?? ''}
-          onChange={(value) =>
-            setSelectedOption(value as DeletionAction)
-          }
-        >
-          <Stack gap='xs'>
-            <Paper
-              withBorder
-              p='sm'
-              style={{
-                cursor: 'pointer',
-                borderColor: isDeletingArcher
-                  ? 'var(--mantine-color-red-5)'
-                  : undefined,
-                borderWidth: isDeletingArcher ? 2 : 1,
-              }}
-              onClick={() => setSelectedOption('delete-archer')}
-            >
-              <Group gap='sm'>
-                <IconTrash
-                  size={18}
-                  color={isDeletingArcher ? 'var(--mantine-color-red-5)' : 'var(--mantine-color-gray-5)'}
-                />
-                <Radio
-                  value='delete-archer'
-                  label={t('deleteArcherOption')}
-                  color='red'
-                />
-              </Group>
-            </Paper>
+      <form id='delete-archer-form' onSubmit={handleSubmit}>
+        <Stack gap='md'>
+          <Text size='sm' c='dimmed'>{t('chooseDeletionOption')}</Text>
+          <Radio.Group
+            value={selectedOption ?? ''}
+            onChange={(value) =>
+              setSelectedOption(value as DeletionAction)
+            }
+          >
+            <Stack gap='xs'>
+              <Paper
+                withBorder
+                p='sm'
+                style={{
+                  cursor: 'pointer',
+                  borderColor: isDeletingArcher
+                    ? 'var(--mantine-color-red-5)'
+                    : undefined,
+                  borderWidth: isDeletingArcher ? 2 : 1,
+                }}
+                onClick={() => setSelectedOption('delete-archer')}
+              >
+                <Group gap='sm'>
+                  <IconTrash
+                    size={18}
+                    color={isDeletingArcher ? 'var(--mantine-color-red-5)' : 'var(--mantine-color-gray-5)'}
+                  />
+                  <Radio
+                    value='delete-archer'
+                    label={t('deleteArcherOption')}
+                    color='red'
+                  />
+                </Group>
+              </Paper>
 
-            <Paper
-              withBorder
-              p='sm'
-              style={{
-                cursor: 'pointer',
-                borderColor: isClearingScore
-                  ? 'var(--mantine-color-red-5)'
-                  : undefined,
-                borderWidth: isClearingScore ? 2 : 1,
-              }}
-              onClick={() => setSelectedOption('clear-score')}
-            >
-              <Group gap='sm'>
-                <IconX
-                  size={18}
-                  color={isClearingScore ? 'var(--mantine-color-red-5)' : 'var(--mantine-color-gray-5)'}
-                />
-                <Radio
-                  value='clear-score'
-                  label={t('deleteScoreOption')}
-                  color='red'
-                />
-              </Group>
-            </Paper>
-          </Stack>
-        </Radio.Group>
+              <Paper
+                withBorder
+                p='sm'
+                style={{
+                  cursor: 'pointer',
+                  borderColor: isClearingScore
+                    ? 'var(--mantine-color-red-5)'
+                    : undefined,
+                  borderWidth: isClearingScore ? 2 : 1,
+                }}
+                onClick={() => setSelectedOption('clear-score')}
+              >
+                <Group gap='sm'>
+                  <IconX
+                    size={18}
+                    color={isClearingScore ? 'var(--mantine-color-red-5)' : 'var(--mantine-color-gray-5)'}
+                  />
+                  <Radio
+                    value='clear-score'
+                    label={t('deleteScoreOption')}
+                    color='red'
+                  />
+                </Group>
+              </Paper>
+            </Stack>
+          </Radio.Group>
 
-        {(isDeletingArcher || isClearingScore) && (
-          <Stack pl='xs' gap={2}>
-            {isDeletingArcher && (
-              <>
-                <Text size='sm'>{t('deleteArcherDialogContent1')}</Text>
-                <Text size='sm' c='dimmed'>{t('deleteArcherDialogContent3')}</Text>
-              </>
-            )}
-            {isClearingScore && (
-              <>
-                <Text size='sm'>{t('deleteArcherDialogContent2')}</Text>
-                <Text size='sm' c='dimmed'>{t('deleteArcherDialogContent3')}</Text>
-              </>
-            )}
-          </Stack>
-        )}
-      </Stack>
+          {(isDeletingArcher || isClearingScore) && (
+            <Stack pl='xs' gap={2}>
+              {isDeletingArcher && (
+                <>
+                  <Text size='sm'>{t('deleteArcherDialogContent1')}</Text>
+                  <Text size='sm' c='dimmed'>{t('deleteArcherDialogContent3')}</Text>
+                </>
+              )}
+              {isClearingScore && (
+                <>
+                  <Text size='sm'>{t('deleteArcherDialogContent2')}</Text>
+                  <Text size='sm' c='dimmed'>{t('deleteArcherDialogContent3')}</Text>
+                </>
+              )}
+            </Stack>
+          )}
+        </Stack>
+      </form>
     </ModalWrapper>
   );
 };

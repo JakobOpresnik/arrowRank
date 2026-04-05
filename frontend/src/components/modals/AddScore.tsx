@@ -193,6 +193,7 @@ const AddScore = ({
               searchable
               nothingFoundMessage={t('archerSelectNoOptions')}
               leftSection={<IconSearch size={18} />}
+              data-autofocus
               onChange={(value) => {
                 const archer =
                   archers?.find((a: Archer) => a.id === Number(value)) ?? null;

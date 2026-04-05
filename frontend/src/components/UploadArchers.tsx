@@ -57,11 +57,13 @@ const UploadArchers = ({ competitionId, onDone }: UploadArchersProps) => {
         onChange={handleFileChange}
       />
       <Group gap='sm'>
-        <label htmlFor='archers-file-upload'>
-          <Button component='span' leftSection={<IconPaperclip size={18} />}>
-            {t('chooseFile')}
-          </Button>
-        </label>
+        <Button
+          leftSection={<IconPaperclip size={18} />}
+          data-autofocus
+          onClick={() => document.getElementById('archers-file-upload')?.click()}
+        >
+          {t('chooseFile')}
+        </Button>
         <Tooltip label={t('clearSelectedFile')} position='right' withArrow>
           <ActionIcon
             variant='filled'
