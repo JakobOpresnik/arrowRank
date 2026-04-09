@@ -222,10 +222,11 @@ def upload_data_into_db(
         print("processing CSV rows...")
 
         for row in reader:
-            email: str = row.get("Email", "")
-            club: str = row.get("klub", "")
+            row_lower = {k.lower().strip(): v for k, v in row.items() if k}
+            email: str = row_lower.get("email", "")
+            club: str = row_lower.get("klub", "")
 
-            full_name: str = row.get("ime in priimek", "")
+            full_name: str = row_lower.get("ime in priimek", "")
             if " " in full_name:
                 first_name, last_name = full_name.split(' ', 1)
             else:
@@ -233,7 +234,7 @@ def upload_data_into_db(
 
             print("full name: ", full_name)
 
-            full_category: str = row.get("slog", "")
+            full_category: str = row_lower.get("slog", "")
             category, gender, age_group = parse_category(full_category)
 
             print(f"Parsed archer: {first_name} {last_name}, email: {email}, club: {club}, category: {category}, gender: {gender}, age group: {age_group}")

@@ -27,11 +27,11 @@ def parse_category(category_value: str):
     if "moški" in category_value or "moski" in category_value or "fantje" in category_value:
         gender = Gender.MALE
     
-    # parse age group
-    if "u11" in category_value:
+    # parse age group (U10 and U11 both map to U11; U15 and U16 both map to U16)
+    if "u11" in category_value or "u10" in category_value:
         age_group = AgeGroup.U11
         gender = Gender.MIXED
-    if "u16" in category_value:
+    if "u16" in category_value or "u15" in category_value:
         age_group = AgeGroup.U16
         if category == Category.LONG_BOW:
             gender = Gender.MIXED
