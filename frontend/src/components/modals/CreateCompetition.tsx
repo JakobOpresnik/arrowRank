@@ -17,6 +17,7 @@ import { BE_BASE_URL } from '../../constants';
 import { useAddCompetition } from '../../hooks/useAddCompetition';
 import { useUploadCompetitionLogo } from '../../hooks/useUploadCompetitionLogo';
 import { useFilterStore, FilterStore } from '../../stores/useFilterStore';
+import { useCompetitionStore } from '../../stores/useCompetitionStore';
 import { CreateCompetitionProps, Competition } from '../../types';
 import { ModalWrapper } from './ModalWrapper';
 import 'dayjs/locale/sl';
@@ -58,6 +59,7 @@ const CreateCompetition = ({
     }
   }, [open, isLogoUploadOnly]);
 
+  const { setSelectedCompetition } = useCompetitionStore();
   const { mutate: createCompetition } = useAddCompetition();
   const { mutate: uploadCompetitionLogo } = useUploadCompetitionLogo(
     selectedCompetition?.id || 0,
@@ -118,7 +120,8 @@ const CreateCompetition = ({
         { name, date, location, logoFile },
         {
           onError: (err: Error) => console.error(err),
-          onSuccess: () => {
+          onSuccess: (newCompetition: Competition) => {
+            setSelectedCompetition(newCompetition);
             onCreated?.();
             clearFilters();
           },

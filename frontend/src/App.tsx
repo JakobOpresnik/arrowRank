@@ -1,5 +1,5 @@
 import './App.css';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import CreateCompetition from './components/modals/CreateCompetition';
 import {
   ActionIcon,
@@ -85,16 +85,10 @@ function App() {
 
   const { selectedCompetition, setSelectedCompetition } = useCompetitionStore();
   const { data: competitions } = useCompetitions();
-  const autoSelectNext = useRef(false);
-
   useEffect(() => {
     if (competitions && selectedCompetition) {
       const stillExists = competitions.some((c) => c.id === selectedCompetition.id);
       if (!stillExists) setSelectedCompetition(null);
-    }
-    if (autoSelectNext.current && competitions?.length && !selectedCompetition) {
-      setSelectedCompetition(competitions[competitions.length - 1]);
-      autoSelectNext.current = false;
     }
   }, [competitions, selectedCompetition, setSelectedCompetition]);
 
@@ -450,9 +444,6 @@ function App() {
         selectedCompetition={selectedCompetition}
         onCreated={() => {
           showSuccessNotification('created');
-          if (!selectedCompetition) {
-            autoSelectNext.current = true;
-          }
         }}
         onClose={() => setIsOpenCompetition(false)}
       />

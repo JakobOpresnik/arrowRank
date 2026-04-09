@@ -7,7 +7,11 @@ export const useAddCompetition = () => {
 
   return useMutation<Competition, Error, CompetitionCreate>({
     mutationFn: createCompetition,
-    onSuccess: () => {
+    onSuccess: (newCompetition) => {
+      queryClient.setQueryData<Competition[]>(['competitions'], (old = []) => [
+        ...old,
+        newCompetition,
+      ]);
       queryClient.invalidateQueries({ queryKey: ['competitions'] });
     },
   });
