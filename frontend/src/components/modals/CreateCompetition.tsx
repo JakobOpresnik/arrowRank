@@ -43,7 +43,9 @@ const CreateCompetition = ({
   );
   const [logoFile, setLogoFile] = useState<File | null>(null);
 
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [touchedName, setTouchedName] = useState<boolean>(false);
+  const [touchedDate, setTouchedDate] = useState<boolean>(false);
+  const [touchedLocation, setTouchedLocation] = useState<boolean>(false);
   const [datePickerOpened, setDatePickerOpened] = useState<boolean>(false);
   const dateJustSelected = useRef(false);
 
@@ -54,7 +56,9 @@ const CreateCompetition = ({
       setLocation('');
       setLogo(null);
       setLogoFile(null);
-      setIsSubmitting(false);
+      setTouchedName(false);
+      setTouchedDate(false);
+      setTouchedLocation(false);
       setDatePickerOpened(false);
     }
   }, [open, isLogoUploadOnly]);
@@ -94,12 +98,10 @@ const CreateCompetition = ({
     setDate('');
     setLocation('');
     setLogo(null);
-    setIsSubmitting(false);
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
-    setIsSubmitting(true);
 
     if (isLogoUploadOnly) {
       uploadCompetitionLogo(
@@ -178,10 +180,11 @@ const CreateCompetition = ({
                 placeholder={t('competitionName')}
                 value={name}
                 onChange={(e) => setName(e.currentTarget.value)}
+                onBlur={() => setTouchedName(true)}
                 required
                 data-autofocus
                 error={
-                  isSubmitting && name.length < 5
+                  touchedName && !isNameValid
                     ? t('competitionNameError')
                     : undefined
                 }
@@ -218,10 +221,18 @@ const CreateCompetition = ({
                     }),
                   };
                 }}
+                error={
+                  touchedDate && !isDateValid
+                    ? t('competitionDateError')
+                    : undefined
+                }
                 popoverProps={{
                   opened: datePickerOpened,
                   returnFocus: true,
-                  onClose: () => setDatePickerOpened(false),
+                  onClose: () => {
+                    setDatePickerOpened(false);
+                    setTouchedDate(true);
+                  },
                 }}
                 onFocus={() => {
                   if (dateJustSelected.current) {
@@ -237,10 +248,11 @@ const CreateCompetition = ({
                 placeholder={t('competitionLocation')}
                 value={location}
                 onChange={(e) => setLocation(e.currentTarget.value)}
+                onBlur={() => setTouchedLocation(true)}
                 required
                 leftSection={<IconMapPin size={18} />}
                 error={
-                  isSubmitting && location.length < 5
+                  touchedLocation && !isLocationValid
                     ? t('competitionLocationError')
                     : undefined
                 }

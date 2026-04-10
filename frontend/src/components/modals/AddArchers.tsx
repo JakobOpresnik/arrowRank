@@ -33,7 +33,10 @@ const AddArchers = ({ open, onClose, selectedCompetitionId }: AddArchersProps) =
   );
 
   useEffect(() => {
-    if (open) setSelectedCompetition(selectedCompetitionId ?? null);
+    if (open) {
+      setSelectedCompetition(selectedCompetitionId ?? null);
+      setTouched({});
+    }
   }, [open, selectedCompetitionId]);
 
   const [firstName, setFirstName] = useState<string | null>(null);
@@ -43,7 +46,11 @@ const AddArchers = ({ open, onClose, selectedCompetitionId }: AddArchersProps) =
   const [category, setCategory] = useState<string | null>(null);
   const [ageGroup, setAgeGroup] = useState<string | null>(null);
   const [gender, setGender] = useState<string | null>(null);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const firstNameRef = useRef<HTMLInputElement>(null);
+
+  const touch = (field: string) =>
+    setTouched((prev) => ({ ...prev, [field]: true }));
 
   const { data: competitions } = useCompetitions();
 
@@ -70,8 +77,8 @@ const AddArchers = ({ open, onClose, selectedCompetitionId }: AddArchersProps) =
 
   const canSubmit: boolean = useMemo(
     () =>
-      !!firstName &&
-      !!lastName &&
+      (firstName?.length ?? 0) >= 2 &&
+      (lastName?.length ?? 0) >= 2 &&
       !!club &&
       club.length >= 3 &&
       !!selectedCompetition &&
@@ -178,14 +185,18 @@ const AddArchers = ({ open, onClose, selectedCompetitionId }: AddArchersProps) =
                   placeholder={t('enterFirstName')}
                   value={firstName ?? ''}
                   onChange={(e) => setFirstName(e.currentTarget.value)}
+                  onBlur={() => touch('firstName')}
                   required
+                  error={touched.firstName && (firstName?.length ?? 0) < 2 ? t('errorFirstNameMinLength') : undefined}
                 />
                 <TextInput
                   label={t('lastName')}
                   placeholder={t('enterLastName')}
                   value={lastName ?? ''}
                   onChange={(e) => setLastName(e.currentTarget.value)}
+                  onBlur={() => touch('lastName')}
                   required
+                  error={touched.lastName && (lastName?.length ?? 0) < 2 ? t('errorLastNameMinLength') : undefined}
                 />
               </Group>
               <Group grow gap='md'>
@@ -201,10 +212,11 @@ const AddArchers = ({ open, onClose, selectedCompetitionId }: AddArchersProps) =
                   placeholder={t('enterClub')}
                   value={club ?? ''}
                   onChange={(e) => setClub(e.currentTarget.value)}
+                  onBlur={() => touch('club')}
                   required
                   error={
-                    club !== null && club.length > 0 && club.length < 3
-                      ? 'Club name must be at least 3 characters'
+                    touched.club && (!club || club.length < 3)
+                      ? t('errorClubMinLength')
                       : undefined
                   }
                 />
@@ -218,7 +230,9 @@ const AddArchers = ({ open, onClose, selectedCompetitionId }: AddArchersProps) =
                 onChange={(value) =>
                   setSelectedCompetition(value ? Number(value) : null)
                 }
+                onBlur={() => touch('competition')}
                 required
+                error={touched.competition && !selectedCompetition ? t('errorCompetitionRequired') : undefined}
               />
               <Group grow gap='md'>
                 <Select
@@ -232,7 +246,9 @@ const AddArchers = ({ open, onClose, selectedCompetitionId }: AddArchersProps) =
                       setGender('mixed');
                     }
                   }}
+                  onBlur={() => touch('category')}
                   required
+                  error={touched.category && !category ? t('errorCategoryRequired') : undefined}
                 />
                 <Select
                   label={t('ageGroup')}
@@ -249,7 +265,9 @@ const AddArchers = ({ open, onClose, selectedCompetitionId }: AddArchersProps) =
                       setGender('mixed');
                     }
                   }}
+                  onBlur={() => touch('ageGroup')}
                   required
+                  error={touched.ageGroup && !ageGroup ? t('errorAgeGroupRequired') : undefined}
                 />
               </Group>
               <Select
@@ -259,8 +277,10 @@ const AddArchers = ({ open, onClose, selectedCompetitionId }: AddArchersProps) =
                 value={gender}
                 leftSection={<IconGenderBigender size={18} />}
                 onChange={(value) => setGender(value)}
+                onBlur={() => touch('gender')}
                 disabled={isGenderSelectDisabled}
                 required
+                error={touched.gender && !gender && !isGenderSelectDisabled ? t('errorGenderRequired') : undefined}
               />
               <Button mt='xs' type='submit' disabled={!canSubmit}>
                 {t('addArcherButton').toUpperCase()}

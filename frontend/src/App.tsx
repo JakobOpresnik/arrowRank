@@ -38,6 +38,7 @@ import {
   IconMoon,
   IconTrash,
   IconTrashX,
+  IconInfoCircle,
 } from '@tabler/icons-react';
 import { useArchersClearScores } from './hooks/useArchersClearScores';
 import { useArchersUpdateScore } from './hooks/useArchersUpdateScore';
@@ -49,6 +50,7 @@ import { useCompetitionStore } from './stores/useCompetitionStore';
 import ConfirmClearScores from './components/modals/ConfirmClearScores';
 import ConfirmDeleteAllArchers from './components/modals/ConfirmDeleteAllArchers';
 import ConfirmDeleteCompetition from './components/modals/ConfirmDeleteCompetition';
+import AboutApp from './components/modals/AboutApp';
 import PtlLogo from './assets/ptl_logo.png';
 import { useTranslation } from 'react-i18next';
 import SelectLanguage from './components/SelectLanguage';
@@ -71,6 +73,17 @@ function App() {
   const [isOpenAddLogo, setIsOpenAddLogo] = useState<boolean>(false);
   const [isOpenDeleteAllArchers, setIsOpenDeleteAllArchers] = useState<boolean>(false);
   const [isOpenDeleteCompetition, setIsOpenDeleteCompetition] = useState<boolean>(false);
+  const [isOpenAbout, setIsOpenAbout] = useState<boolean>(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (e.key === 'i' || e.key === 'I') setIsOpenAbout(true);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const {
     clubFilter,
@@ -351,6 +364,15 @@ function App() {
                 )}
               </ActionIcon>
             </Tooltip>
+            <Tooltip label={t('aboutTooltip')} position='top'>
+              <ActionIcon
+                variant='default'
+                size='lg'
+                onClick={() => setIsOpenAbout(true)}
+              >
+                <IconInfoCircle size={18} />
+              </ActionIcon>
+            </Tooltip>
           </Group>
           <Group gap='sm'>
             {shouldDisplayClearFiltersButton && (
@@ -493,6 +515,8 @@ function App() {
           setIsOpenDeleteCompetition(false);
         }}
       />
+
+      <AboutApp open={isOpenAbout} onClose={() => setIsOpenAbout(false)} />
     </div>
   );
 }
