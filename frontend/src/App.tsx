@@ -4,8 +4,10 @@ import CreateCompetition from './components/modals/CreateCompetition';
 import {
   ActionIcon,
   Button,
+  Divider,
   Group,
   Image,
+  Loader,
   Stack,
   Text,
   Title,
@@ -39,6 +41,10 @@ import {
   IconTrash,
   IconTrashX,
   IconInfoCircle,
+  IconBrandLinkedin,
+  IconWorld,
+  IconMail,
+  IconPower,
 } from '@tabler/icons-react';
 import { useArchersClearScores } from './hooks/useArchersClearScores';
 import { useArchersUpdateScore } from './hooks/useArchersUpdateScore';
@@ -51,6 +57,7 @@ import ConfirmClearScores from './components/modals/ConfirmClearScores';
 import ConfirmDeleteAllArchers from './components/modals/ConfirmDeleteAllArchers';
 import ConfirmDeleteCompetition from './components/modals/ConfirmDeleteCompetition';
 import AboutApp from './components/modals/AboutApp';
+import ConfirmExit from './components/modals/ConfirmExit';
 import PtlLogo from './assets/ptl_logo.png';
 import { useTranslation } from 'react-i18next';
 import SelectLanguage from './components/SelectLanguage';
@@ -71,15 +78,19 @@ function App() {
   const [isOpenScoreModal, setIsOpenScoreModal] = useState<boolean>(false);
   const [isOpenClearScores, setIsOpenClearScores] = useState<boolean>(false);
   const [isOpenAddLogo, setIsOpenAddLogo] = useState<boolean>(false);
-  const [isOpenDeleteAllArchers, setIsOpenDeleteAllArchers] = useState<boolean>(false);
-  const [isOpenDeleteCompetition, setIsOpenDeleteCompetition] = useState<boolean>(false);
+  const [isOpenDeleteAllArchers, setIsOpenDeleteAllArchers] =
+    useState<boolean>(false);
+  const [isOpenDeleteCompetition, setIsOpenDeleteCompetition] =
+    useState<boolean>(false);
   const [isOpenAbout, setIsOpenAbout] = useState<boolean>(false);
+  const [isClosing, setIsClosing] = useState<boolean>(false);
+  const [isOpenExit, setIsOpenExit] = useState<boolean>(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement).tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-      if (e.key === 'i' || e.key === 'I') setIsOpenAbout(true);
+      if (e.key === 'i' || e.key === 'I') setIsOpenAbout((prev) => !prev);
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -100,7 +111,9 @@ function App() {
   const { data: competitions } = useCompetitions();
   useEffect(() => {
     if (competitions && selectedCompetition) {
-      const stillExists = competitions.some((c) => c.id === selectedCompetition.id);
+      const stillExists = competitions.some(
+        (c) => c.id === selectedCompetition.id,
+      );
       if (!stillExists) setSelectedCompetition(null);
     }
   }, [competitions, selectedCompetition, setSelectedCompetition]);
@@ -133,7 +146,13 @@ function App() {
     () =>
       !!selectedCompetition &&
       (!!clubFilter || !!categoryFilter || !!genderFilter || !!ageGroupFilter),
-    [selectedCompetition, clubFilter, categoryFilter, genderFilter, ageGroupFilter],
+    [
+      selectedCompetition,
+      clubFilter,
+      categoryFilter,
+      genderFilter,
+      ageGroupFilter,
+    ],
   );
 
   const areAnyScoresPresent: boolean = useMemo(() => {
@@ -229,237 +248,348 @@ function App() {
 
   return (
     <div className='App'>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', marginBottom: 'var(--mantine-spacing-xl)' }}>
-        <Image src={PtlLogo} alt={t('ptlLogoAltText')} h={120} w='auto' style={{ justifySelf: 'start' }} />
-        <Stack align='center' gap={4}>
-          <Title order={1} fz='2.4rem' fw={700} lts={2}>
-            PTL {t('scoreboard').toUpperCase()}
-          </Title>
-          {selectedCompetition && (
-            <Text size='xl' fw={500} c='dimmed' ta='center'>
-              {selectedCompetition.name} &middot; {formatDate(selectedCompetition.date)}
-            </Text>
-          )}
-        </Stack>
-        <div style={{ justifySelf: 'end' }}>{headerLogoElement}</div>
-      </div>
+      <div className='App-content'>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr auto 1fr',
+            alignItems: 'center',
+            marginBottom: 'var(--mantine-spacing-xl)',
+          }}
+        >
+          <Image
+            src={PtlLogo}
+            alt={t('ptlLogoAltText')}
+            h={120}
+            w='auto'
+            style={{ justifySelf: 'start' }}
+          />
+          <Stack align='center' gap={4}>
+            <Title order={1} fz='2.4rem' fw={700} lts={2}>
+              PTL {t('scoreboard').toUpperCase()}
+            </Title>
+            {selectedCompetition && (
+              <Text size='xl' fw={500} c='dimmed' ta='center'>
+                {selectedCompetition.name} &middot;{' '}
+                {formatDate(selectedCompetition.date)}
+              </Text>
+            )}
+          </Stack>
+          <div style={{ justifySelf: 'end' }}>{headerLogoElement}</div>
+        </div>
 
-      <Stack gap='md'>
-        {/* Row 1: action buttons (left) + generate report (right) */}
-        <Group justify='space-between'>
-          <Group gap='sm'>
-            <SelectCompetition
-              onSelect={() =>
-                queryClient.invalidateQueries({ queryKey: ['archers'] })
-              }
-            />
-            <Button
-              leftSection={<IconTrophy size={18} />}
-              onClick={() => setIsOpenCompetition(true)}
-            >
-              {t('createCompetition')}
-            </Button>
-            {competitions && competitions.length > 0 && (
-              <Button
-                leftSection={<IconListDetails size={18} />}
-                onClick={() => setIsOpenArchers(true)}
-              >
-                {t('addArchers')}
-              </Button>
-            )}
-            <AddArchers
-              open={isOpenArchers}
-              onClose={() => setIsOpenArchers(false)}
-              selectedCompetitionId={selectedCompetition?.id ?? null}
-            />
-            {archersDataExists && (
-              <Button
-                leftSection={<IconPlus size={18} />}
-                onClick={() => setIsOpenScoreModal(true)}
-              >
-                {t('addScore')}
-              </Button>
-            )}
-            <AddScore
-              open={isOpenScoreModal}
-              selectedCompetition={selectedCompetition?.id ?? 0}
-              onArcherUpdate={async (update: ArcherUpdate) => {
-                handleSubmit(update);
-                queryClient.invalidateQueries({
-                  queryKey: ['archers', selectedCompetition?.id],
-                });
-              }}
-              onClose={() => setIsOpenScoreModal(false)}
-            />
-          </Group>
-          {(archersDataExists || areAnyFiltersApplied) && (
-            <Button
-              leftSection={<IconDownload size={18} />}
-              onClick={async () => {
-                const notifId = 'excel-export';
-                notifications.show({
-                  id: notifId,
-                  title: t('exportButton'),
-                  message: t('exportingReport'),
-                  color: 'blue',
-                  loading: true,
-                  autoClose: false,
-                  withCloseButton: false,
-                });
-                try {
-                  const savedPath = await exportTableToExcel(sortedArchers, selectedCompetition);
-                  notifications.update({
-                    id: notifId,
-                    title: t('exportSuccess'),
-                    message: savedPath ? (
-                      <Button
-                        size='xs'
-                        mt={6}
-                        variant='light'
-                        onClick={() => window.electronApi?.openFile(savedPath)}
-                      >
-                        {t('openFolder')}
-                      </Button>
-                    ) : '',
-                    color: 'teal',
-                    loading: false,
-                    autoClose: savedPath ? false : 3000,
-                    withCloseButton: true,
-                  });
-                } catch {
-                  notifications.update({
-                    id: notifId,
-                    title: t('exportError'),
-                    message: '',
-                    color: 'red',
-                    loading: false,
-                    autoClose: 3000,
-                    withCloseButton: true,
-                  });
+        <Stack gap='md'>
+          {/* Row 1: action buttons (left) + generate report (right) */}
+          <Group justify='space-between'>
+            <Group gap='sm'>
+              <SelectCompetition
+                onSelect={() =>
+                  queryClient.invalidateQueries({ queryKey: ['archers'] })
                 }
-              }}
-            >
-              {t('exportButton')}
-            </Button>
-          )}
-        </Group>
-
-        {/* Row 2: language + theme (left) | clear filters + clear scores (right) */}
-        <Group justify='space-between'>
-          <Group gap='sm'>
-            <SelectLanguage language={language} setLanguage={setLanguage} />
-            <Tooltip
-              label={colorScheme === 'dark' ? 'Light mode' : 'Dark mode'}
-              position='top'
-            >
-              <ActionIcon
-                variant='default'
-                size='lg'
-                onClick={() => toggleColorScheme()}
+              />
+              <Button
+                leftSection={<IconTrophy size={18} />}
+                onClick={() => setIsOpenCompetition(true)}
               >
-                {colorScheme === 'dark' ? (
-                  <IconSun size={18} />
-                ) : (
-                  <IconMoon size={18} />
-                )}
-              </ActionIcon>
-            </Tooltip>
-            <Tooltip label={t('aboutTooltip')} position='top'>
-              <ActionIcon
-                variant='default'
-                size='lg'
-                onClick={() => setIsOpenAbout(true)}
+                {t('createCompetition')}
+              </Button>
+              {competitions && competitions.length > 0 && (
+                <Button
+                  leftSection={<IconListDetails size={18} />}
+                  onClick={() => setIsOpenArchers(true)}
+                >
+                  {t('addArchers')}
+                </Button>
+              )}
+              <AddArchers
+                open={isOpenArchers}
+                onClose={() => setIsOpenArchers(false)}
+                selectedCompetitionId={selectedCompetition?.id ?? null}
+              />
+              {archersDataExists && (
+                <Button
+                  leftSection={<IconPlus size={18} />}
+                  onClick={() => setIsOpenScoreModal(true)}
+                >
+                  {t('addScore')}
+                </Button>
+              )}
+              <AddScore
+                open={isOpenScoreModal}
+                selectedCompetition={selectedCompetition?.id ?? 0}
+                onArcherUpdate={async (update: ArcherUpdate) => {
+                  handleSubmit(update);
+                  queryClient.invalidateQueries({
+                    queryKey: ['archers', selectedCompetition?.id],
+                  });
+                }}
+                onClose={() => setIsOpenScoreModal(false)}
+              />
+            </Group>
+            {(archersDataExists || areAnyFiltersApplied) && (
+              <Button
+                leftSection={<IconDownload size={18} />}
+                onClick={async () => {
+                  const notifId = 'excel-export';
+                  notifications.show({
+                    id: notifId,
+                    title: t('exportButton'),
+                    message: t('exportingReport'),
+                    color: 'blue',
+                    loading: true,
+                    autoClose: false,
+                    withCloseButton: false,
+                  });
+                  try {
+                    const savedPath = await exportTableToExcel(
+                      sortedArchers,
+                      selectedCompetition,
+                    );
+                    notifications.update({
+                      id: notifId,
+                      title: t('exportSuccess'),
+                      message: savedPath ? (
+                        <Button
+                          size='xs'
+                          mt={6}
+                          variant='light'
+                          onClick={() =>
+                            window.electronApi?.openFile(savedPath)
+                          }
+                        >
+                          {t('openFolder')}
+                        </Button>
+                      ) : (
+                        ''
+                      ),
+                      color: 'teal',
+                      loading: false,
+                      autoClose: savedPath ? false : 3000,
+                      withCloseButton: true,
+                    });
+                  } catch {
+                    notifications.update({
+                      id: notifId,
+                      title: t('exportError'),
+                      message: '',
+                      color: 'red',
+                      loading: false,
+                      autoClose: 3000,
+                      withCloseButton: true,
+                    });
+                  }
+                }}
               >
-                <IconInfoCircle size={18} />
-              </ActionIcon>
-            </Tooltip>
+                {t('exportButton')}
+              </Button>
+            )}
           </Group>
-          <Group gap='sm'>
-            {shouldDisplayClearFiltersButton && (
-              <Tooltip label={t('clearFiltersTooltip')} position='top'>
+
+          {/* Row 2: language + theme (left) | clear filters + clear scores (right) */}
+          <Group justify='space-between'>
+            <Group gap='sm'>
+              <SelectLanguage language={language} setLanguage={setLanguage} />
+              <Tooltip
+                label={colorScheme === 'dark' ? 'Light mode' : 'Dark mode'}
+                position='top'
+              >
                 <ActionIcon
-                  variant='filled'
-                  style={{ backgroundColor: '#FCC844', color: '#000' }}
+                  variant='default'
                   size='lg'
-                  onClick={resetFilters}
+                  onClick={() => toggleColorScheme()}
                 >
-                  <IconFilterOff size={18} />
+                  {colorScheme === 'dark' ? (
+                    <IconSun size={18} />
+                  ) : (
+                    <IconMoon size={18} />
+                  )}
                 </ActionIcon>
               </Tooltip>
-            )}
-            {areAnyScoresPresent && (
-              <Tooltip label={t('clearScoresTooltip')} position='top'>
+              <Tooltip label={t('aboutTooltip')} position='top'>
                 <ActionIcon
-                  variant='filled'
-                  style={{ backgroundColor: '#F55656', color: '#fff' }}
+                  variant='default'
                   size='lg'
-                  onClick={() => setIsOpenClearScores(true)}
+                  onClick={() => setIsOpenAbout(true)}
                 >
-                  <IconX size={18} />
+                  <IconInfoCircle size={18} />
                 </ActionIcon>
               </Tooltip>
-            )}
-            {archersDataExists && (
-              <Tooltip label={t('deleteAllArchersTooltip')} position='top'>
+            </Group>
+            <Group gap='sm'>
+              {shouldDisplayClearFiltersButton && (
+                <Tooltip label={t('clearFiltersTooltip')} position='top'>
+                  <ActionIcon
+                    variant='filled'
+                    style={{ backgroundColor: '#FCC844', color: '#000' }}
+                    size='lg'
+                    onClick={resetFilters}
+                  >
+                    <IconFilterOff size={18} />
+                  </ActionIcon>
+                </Tooltip>
+              )}
+              {areAnyScoresPresent && (
+                <Tooltip label={t('clearScoresTooltip')} position='top'>
+                  <ActionIcon
+                    variant='filled'
+                    style={{ backgroundColor: '#F55656', color: '#fff' }}
+                    size='lg'
+                    onClick={() => setIsOpenClearScores(true)}
+                  >
+                    <IconX size={18} />
+                  </ActionIcon>
+                </Tooltip>
+              )}
+              {archersDataExists && (
+                <Tooltip label={t('deleteAllArchersTooltip')} position='top'>
+                  <ActionIcon
+                    variant='filled'
+                    color='red'
+                    size='lg'
+                    onClick={() => setIsOpenDeleteAllArchers(true)}
+                  >
+                    <IconTrash size={18} />
+                  </ActionIcon>
+                </Tooltip>
+              )}
+              {selectedCompetition && (
+                <Tooltip label={t('deleteCompetitionTooltip')} position='top'>
+                  <ActionIcon
+                    variant='filled'
+                    style={{ backgroundColor: '#7B1010', color: '#fff' }}
+                    size='lg'
+                    onClick={() => setIsOpenDeleteCompetition(true)}
+                  >
+                    <IconTrashX size={18} />
+                  </ActionIcon>
+                </Tooltip>
+              )}
+              {(shouldDisplayClearFiltersButton || areAnyScoresPresent || archersDataExists || !!selectedCompetition) && (
+                <Divider orientation='vertical' />
+              )}
+              <Tooltip label={t('exitTooltip')} position='top'>
                 <ActionIcon
                   variant='filled'
                   color='red'
                   size='lg'
-                  onClick={() => setIsOpenDeleteAllArchers(true)}
+                  disabled={isClosing}
+                  onClick={() => setIsOpenExit(true)}
                 >
-                  <IconTrash size={18} />
+                  {isClosing ? (
+                    <Loader size={14} color='white' />
+                  ) : (
+                    <IconPower size={18} />
+                  )}
                 </ActionIcon>
               </Tooltip>
-            )}
-            {selectedCompetition && (
-              <Tooltip label={t('deleteCompetitionTooltip')} position='top'>
-                <ActionIcon
-                  variant='filled'
-                  style={{ backgroundColor: '#7B1010', color: '#fff' }}
-                  size='lg'
-                  onClick={() => setIsOpenDeleteCompetition(true)}
-                >
-                  <IconTrashX size={18} />
-                </ActionIcon>
-              </Tooltip>
-            )}
+            </Group>
           </Group>
-        </Group>
 
-        {selectedCompetition ? (
-          <ArcherList
-            allArchers={sortedArchers}
-            isLoadingArchers={isLoadingArchers}
-            selectedCompetition={selectedCompetition.id}
-            selectedFilters={{
-              club: clubFilter,
-              category: categoryFilter,
-              gender: genderFilter,
-              ageGroup: ageGroupFilter,
+          {selectedCompetition ? (
+            <ArcherList
+              allArchers={sortedArchers}
+              isLoadingArchers={isLoadingArchers}
+              selectedCompetition={selectedCompetition.id}
+              selectedFilters={{
+                club: clubFilter,
+                category: categoryFilter,
+                gender: genderFilter,
+                ageGroup: ageGroupFilter,
+              }}
+            />
+          ) : competitions && competitions.length > 0 ? (
+            <Stack align='center' justify='center' gap='xs' mt={80}>
+              <IconTrophyOff size={48} color='var(--mantine-color-dimmed)' />
+              <Text size='lg' c='dimmed' fw={500}>
+                {t('noCompetitionSelected')}
+              </Text>
+              <Text size='sm' c='dimmed'>
+                {t('noCompetitionSelectedHint')}
+              </Text>
+            </Stack>
+          ) : (
+            <Stack align='center' justify='center' gap='xs' mt={80}>
+              <IconTrophyOff size={48} color='var(--mantine-color-dimmed)' />
+              <Text size='lg' c='dimmed' fw={500}>
+                {t('noCompetitionsAvailable')}
+              </Text>
+              <Text size='sm' c='dimmed'>
+                {t('noCompetitionsHint')}
+              </Text>
+            </Stack>
+          )}
+        </Stack>
+      </div>
+      {/* end App-content */}
+
+      {/* Footer */}
+      <Group
+        justify='center'
+        align='center'
+        h={80}
+        gap='xs'
+        pt='md'
+        pb='sm'
+        style={{
+          marginTop: '2rem',
+          borderTop: '1px solid var(--mantine-color-default-border)',
+          opacity: 0.45,
+          backgroundColor: 'var(--mantine-color-default-hover)',
+        }}
+      >
+        <Text size='sm' fw={500} c='dimmed'>
+          made by Jakob Oprešnik
+        </Text>
+        <Text size='sm' c='dimmed'>
+          ·
+        </Text>
+        <Tooltip label='jakob.opresnik@gmail.com' position='top'>
+          <ActionIcon
+            component='a'
+            href='mailto:jakob.opresnik@gmail.com'
+            variant='subtle'
+            color='gray'
+            size='sm'
+          >
+            <IconMail size={16} />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label='LinkedIn' position='top'>
+          <ActionIcon
+            variant='subtle'
+            color='gray'
+            size='sm'
+            onClick={() => {
+              const url =
+                'https://www.linkedin.com/in/jakob-opre%C5%A1nik-369214204/';
+              if (window.electronApi?.openExternalUrl) {
+                window.electronApi.openExternalUrl(url);
+              } else {
+                window.open(url, '_blank', 'noopener,noreferrer');
+              }
             }}
-          />
-        ) : competitions && competitions.length > 0 ? (
-          <Stack align='center' justify='center' gap='xs' mt={80}>
-            <IconTrophyOff size={48} color='var(--mantine-color-dimmed)' />
-            <Text size='lg' c='dimmed' fw={500}>
-              {t('noCompetitionSelected')}
-            </Text>
-            <Text size='sm' c='dimmed'>
-              {t('noCompetitionSelectedHint')}
-            </Text>
-          </Stack>
-        ) : (
-          <Stack align='center' justify='center' gap='xs' mt={80}>
-            <IconTrophyOff size={48} color='var(--mantine-color-dimmed)' />
-            <Text size='lg' c='dimmed' fw={500}>
-              {t('noCompetitionsAvailable')}
-            </Text>
-            <Text size='sm' c='dimmed'>
-              {t('noCompetitionsHint')}
-            </Text>
-          </Stack>
-        )}
-      </Stack>
+          >
+            <IconBrandLinkedin size={16} />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label='Portfolio' position='top'>
+          <ActionIcon
+            variant='subtle'
+            color='gray'
+            size='sm'
+            onClick={() => {
+              const url = 'https://www.jakobopresnik.si/';
+              if (window.electronApi?.openExternalUrl) {
+                window.electronApi.openExternalUrl(url);
+              } else {
+                window.open(url, '_blank', 'noopener,noreferrer');
+              }
+            }}
+          >
+            <IconWorld size={16} />
+          </ActionIcon>
+        </Tooltip>
+      </Group>
 
       <CreateCompetition
         open={isOpenCompetition}
@@ -509,7 +639,8 @@ function App() {
         onClose={() => setIsOpenDeleteCompetition(false)}
         onDelete={() => {
           if (!selectedCompetition) return;
-          const nextCompetition = competitions?.find((c) => c.id !== selectedCompetition.id) ?? null;
+          const nextCompetition =
+            competitions?.find((c) => c.id !== selectedCompetition.id) ?? null;
           deleteCompetition(selectedCompetition.id);
           setSelectedCompetition(nextCompetition);
           setIsOpenDeleteCompetition(false);
@@ -517,6 +648,20 @@ function App() {
       />
 
       <AboutApp open={isOpenAbout} onClose={() => setIsOpenAbout(false)} />
+
+      <ConfirmExit
+        open={isOpenExit}
+        onClose={() => setIsOpenExit(false)}
+        onConfirm={async () => {
+          setIsOpenExit(false);
+          setIsClosing(true);
+          if (window.electronApi?.closeApp) {
+            await window.electronApi.closeApp();
+          } else {
+            window.close();
+          }
+        }}
+      />
     </div>
   );
 }
