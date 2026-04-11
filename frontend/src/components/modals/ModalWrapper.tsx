@@ -10,6 +10,7 @@ export const ModalWrapper = ({
   maxWidth = 440,
   padding,
   footerMt = 'md',
+  closeOnClickOutside = false,
 }: ModalWrapperProps) => {
   return (
     <Modal
@@ -17,7 +18,7 @@ export const ModalWrapper = ({
       onClose={onClose}
       title={title}
       size={maxWidth}
-      closeOnClickOutside={false}
+      closeOnClickOutside={closeOnClickOutside}
       centered
       scrollAreaComponent={ScrollArea.Autosize}
       {...(padding !== undefined && { padding })}

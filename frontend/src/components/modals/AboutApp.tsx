@@ -42,6 +42,7 @@ const AboutApp = ({ open, onClose }: AboutAppProps) => {
     <ModalWrapper
       open={open}
       onClose={onClose}
+      closeOnClickOutside
       title={
         <Group gap='sm'>
           <IconInfoCircle size={20} />
