@@ -10,4 +10,8 @@ contextBridge.exposeInMainWorld('electronApi', {
     ipcRenderer.invoke('open-file-location', filePath),
   openFile: (filePath) =>
     ipcRenderer.invoke('open-file', filePath),
+  openExternalUrl: (url) =>
+    ipcRenderer.invoke('open-external-url', url),
+  closeApp: () =>
+    ipcRenderer.invoke('close-app'),
 });

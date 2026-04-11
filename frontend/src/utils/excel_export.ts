@@ -15,6 +15,8 @@ declare global {
       saveExcelFile: (buffer: Uint8Array, filename: string) => Promise<string>;
       openFileLocation: (filePath: string) => Promise<void>;
       openFile: (filePath: string) => Promise<void>;
+      openExternalUrl: (url: string) => Promise<void>;
+      closeApp: () => Promise<void>;
     };
   }
 }

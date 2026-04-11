@@ -81,6 +81,14 @@ ipcMain.handle('open-file', (_event, filePath) => {
   shell.openPath(filePath);
 });
 
+ipcMain.handle('open-external-url', (_event, url) => {
+  shell.openExternal(url);
+});
+
+ipcMain.handle('close-app', () => {
+  app.quit();
+});
+
 app.whenReady().then(async () => {
   // pick backend path depending on dev or packaged build
   const backendPath = app.isPackaged

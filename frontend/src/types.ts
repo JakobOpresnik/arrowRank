@@ -165,6 +165,7 @@ export interface ModalWrapperProps {
   maxWidth?: number;
   padding?: string | number;
   footerMt?: string | number;
+  closeOnClickOutside?: boolean;
 }
 
 export type OnCloseReason = 'backdropClick' | 'escapeKeyDown' | 'closeClick';
