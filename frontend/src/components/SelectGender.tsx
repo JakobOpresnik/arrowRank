@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { GENDER_OPTIONS } from '../constants';
 import { queryClient } from '../lib/queryClient';
 import { SelectGenderProps } from '../types';
+import { FILTER_SELECT_STYLES } from '../theme';
 
 const SelectGender = ({
   competitionId,
@@ -31,9 +32,7 @@ const SelectGender = ({
           queryKey: ['archersFiltered', competitionId, value],
         });
       }}
-      styles={{
-        input: { backgroundColor: 'var(--mantine-color-brand-8)', color: '#f0f0f0', borderColor: 'var(--mantine-color-brand-7)' },
-      }}
+      styles={FILTER_SELECT_STYLES}
     />
   );
 };
