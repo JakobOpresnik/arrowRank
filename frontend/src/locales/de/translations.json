@@ -149,5 +149,10 @@
   "aboutStep5Title": "Ergebnisse exportieren",
   "aboutStep5Desc": "Klicke auf <btn>Ergebnisausdruck</btn>, um einen formatierten Excel-Bericht mit der vollständigen Wettkampfrangliste zu erstellen und zu speichern, basierend auf den aktuell aktiven Tabellenfiltern. Wenn kein Filter ausgewählt ist, werden alle Kategorien zusammen exportiert.",
   "aboutCategories": "Unterstützte Bogenkategorien",
-  "aboutAgeGroups": "Altersgruppen"
+  "aboutAgeGroups": "Altersgruppen",
+  "allCompetitions": "Alle Wettkämpfe",
+  "organizer": "Veranstalter",
+  "backToScoreboard": "Zurück zur Anzeigetafel",
+  "openCompetition": "Öffnen",
+  "selected": "Ausgewählt"
 }

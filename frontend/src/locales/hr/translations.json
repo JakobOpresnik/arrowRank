@@ -157,5 +157,10 @@
   "aboutStep5Title": "Izvezi rezultate",
   "aboutStep5Desc": "Klikni <btn>Ispis rezultata</btn> za generiranje i spremanje formatiranog Excel izvješća s cjelokupnim poretkom natjecanja, uzimajući u obzir trenutno aktivne filtre tablice. Ako nije odabran nijedan filter, sve kategorije se izvoze zajedno.",
   "aboutCategories": "Podržane kategorije luka",
-  "aboutAgeGroups": "Dobne skupine"
+  "aboutAgeGroups": "Dobne skupine",
+  "allCompetitions": "Sva natjecanja",
+  "organizer": "Organizator",
+  "backToScoreboard": "Natrag na tablicu rezultata",
+  "openCompetition": "Otvori",
+  "selected": "Odabrano"
 }

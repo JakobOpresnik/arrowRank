@@ -157,5 +157,10 @@
   "aboutStep5Title": "Izvozi rezultate",
   "aboutStep5Desc": "Klikni <btn>Izpis rezultatov</btn> za ustvarjanje in shranjevanje formatiranega Excel poročila s celotno razvrstitvijo tekmovanja, kjer so upoštevani trenutno izbrani filtri tabele. V kolikor ni izbran noben filter, so izvožene vse kategorije skupaj.",
   "aboutCategories": "Podprte kategorije lokov",
-  "aboutAgeGroups": "Starostne skupine"
+  "aboutAgeGroups": "Starostne skupine",
+  "allCompetitions": "Vsa tekmovanja",
+  "organizer": "Organizator",
+  "backToScoreboard": "Nazaj na tabelo rezultatov",
+  "openCompetition": "Odpri",
+  "selected": "Izbrano"
 }

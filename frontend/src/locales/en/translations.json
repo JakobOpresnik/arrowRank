@@ -157,5 +157,10 @@
   "aboutStep5Title": "Export Results",
   "aboutStep5Desc": "Click <btn>Print Results</btn> to generate and save a formatted Excel report with the full competition rankings, based on the currently active table filters. If no filter is selected, all categories are exported together.",
   "aboutCategories": "Supported Bow Categories",
-  "aboutAgeGroups": "Age Groups"
+  "aboutAgeGroups": "Age Groups",
+  "allCompetitions": "All competitions",
+  "organizer": "Organizer",
+  "backToScoreboard": "Back to scoreboard",
+  "openCompetition": "Open",
+  "selected": "Selected"
 }

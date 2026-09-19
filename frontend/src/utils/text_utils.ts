@@ -6,3 +6,9 @@ export const capitalize = (str: string): string => {
 export const removeSpaces = (str: string): string => {
   return str.replace(/\s+/g, '');
 };
+
+export const formatDate = (dateStr: string): string => {
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return `${d.getDate()}. ${d.getMonth() + 1}. ${d.getFullYear()}`;
+};

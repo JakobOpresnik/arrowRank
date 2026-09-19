@@ -45,6 +45,7 @@ import {
   IconWorld,
   IconMail,
   IconPower,
+  IconTable,
 } from '@tabler/icons-react';
 import { useArchersClearScores } from './hooks/useArchersClearScores';
 import { useArchersUpdateScore } from './hooks/useArchersUpdateScore';
@@ -65,6 +66,9 @@ import { useLanguageStore } from './stores/useLanguageStore';
 import { BE_BASE_URL } from './constants';
 import { useAdvancedArcherSorting } from './hooks/useAdvancedArcherSorting';
 import { useCompetitions } from './hooks/useCompetitions';
+import CompetitionList from './components/CompetitionList';
+import ScrollToTop from './components/ScrollToTop';
+import { formatDate } from './utils/text_utils';
 
 export type CompetitionState = 'created' | 'updated' | null;
 
@@ -85,6 +89,7 @@ function App() {
   const [isOpenAbout, setIsOpenAbout] = useState<boolean>(false);
   const [isClosing, setIsClosing] = useState<boolean>(false);
   const [isOpenExit, setIsOpenExit] = useState<boolean>(false);
+  const [view, setView] = useState<'scoreboard' | 'competitions'>('scoreboard');
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -190,14 +195,6 @@ function App() {
     });
   };
 
-  function formatDate(dateStr: string): string {
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) {
-      throw new Error(`Invalid date: ${dateStr}`);
-    }
-    return `${d.getDate()}. ${d.getMonth() + 1}. ${d.getFullYear()}`;
-  }
-
   const showSuccessNotification = (state: CompetitionState): void => {
     const title =
       state === 'created'
@@ -293,6 +290,19 @@ function App() {
               >
                 {t('createCompetition')}
               </Button>
+              {competitions && competitions.length > 0 && (
+                <Button
+                  variant='default'
+                  leftSection={<IconTable size={18} />}
+                  onClick={() =>
+                    setView((prev) =>
+                      prev === 'competitions' ? 'scoreboard' : 'competitions',
+                    )
+                  }
+                >
+                  {t('allCompetitions')}
+                </Button>
+              )}
               {competitions && competitions.length > 0 && (
                 <Button
                   leftSection={<IconListDetails size={18} />}
@@ -485,7 +495,9 @@ function App() {
             </Group>
           </Group>
 
-          {selectedCompetition ? (
+          {view === 'competitions' ? (
+            <CompetitionList onBack={() => setView('scoreboard')} />
+          ) : selectedCompetition ? (
             <ArcherList
               allArchers={sortedArchers}
               isLoadingArchers={isLoadingArchers}
@@ -646,6 +658,8 @@ function App() {
           setIsOpenDeleteCompetition(false);
         }}
       />
+
+      <ScrollToTop />
 
       <AboutApp open={isOpenAbout} onClose={() => setIsOpenAbout(false)} />
 

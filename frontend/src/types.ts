@@ -127,6 +127,10 @@ export interface SelectAgeGroupProps {
   onChange: (ageGroup: string) => void;
 }
 
+export interface CompetitionListProps {
+  onBack: () => void;
+}
+
 export interface SelectClubProps {
   competitionId: number;
   clubs: string[];
