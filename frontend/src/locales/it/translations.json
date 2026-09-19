@@ -157,5 +157,10 @@
   "aboutStep5Title": "Esporta i risultati",
   "aboutStep5Desc": "Clicca su <btn>Stampa dei risultati</btn> per generare e salvare un report Excel formattato con la classifica completa della competizione, in base ai filtri della tabella attualmente attivi. Se non è selezionato alcun filtro, tutte le categorie vengono esportate insieme.",
   "aboutCategories": "Categorie di arco supportate",
-  "aboutAgeGroups": "Fasce d'età"
+  "aboutAgeGroups": "Fasce d'età",
+  "allCompetitions": "Tutte le gare",
+  "organizer": "Organizzatore",
+  "backToScoreboard": "Torna al tabellone",
+  "openCompetition": "Apri",
+  "selected": "Selezionata"
 }

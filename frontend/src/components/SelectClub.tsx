@@ -2,6 +2,7 @@ import { Select } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { queryClient } from '../lib/queryClient';
 import { SelectClubProps } from '../types';
+import { FILTER_SELECT_STYLES } from '../theme';
 
 const SelectClub = ({
   competitionId,
@@ -28,9 +29,7 @@ const SelectClub = ({
           queryKey: ['archersFiltered', competitionId, value],
         });
       }}
-      styles={{
-        input: { backgroundColor: 'var(--mantine-color-brand-8)', color: '#f0f0f0', borderColor: 'var(--mantine-color-brand-7)' },
-      }}
+      styles={FILTER_SELECT_STYLES}
     />
   );
 };

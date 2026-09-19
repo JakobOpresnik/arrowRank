@@ -224,7 +224,7 @@ def upload_data_into_db(
         for row in reader:
             row_lower = {k.lower().strip(): v for k, v in row.items() if k}
             email: str = row_lower.get("email", "")
-            club: str = row_lower.get("klub", "")
+            club: str = (row_lower.get("slovenski klub") or row_lower.get("foreign club name/ime tujega kluba") or row_lower.get("klub") or "").strip()
 
             full_name: str = row_lower.get("ime in priimek", "")
             if " " in full_name:

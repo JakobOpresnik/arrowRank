@@ -4,6 +4,7 @@ import { BOW_CATEGORIES } from '../constants';
 import { queryClient } from '../lib/queryClient';
 import { useFilterStore } from '../stores/useFilterStore';
 import { SelectCategoryProps } from '../types';
+import { FILTER_SELECT_STYLES } from '../theme';
 
 const SelectCategory = ({
   competitionId,
@@ -39,9 +40,7 @@ const SelectCategory = ({
           ],
         });
       }}
-      styles={{
-        input: { backgroundColor: 'var(--mantine-color-brand-8)', color: '#f0f0f0', borderColor: 'var(--mantine-color-brand-7)' },
-      }}
+      styles={FILTER_SELECT_STYLES}
     />
   );
 };

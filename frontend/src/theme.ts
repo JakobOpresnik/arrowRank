@@ -104,3 +104,15 @@ export const theme = createTheme({
     },
   },
 });
+
+// filter selects sit on the brand-8 table header in both schemes — tint it, don't invert it
+export const FILTER_SELECT_STYLES = {
+  input: {
+    backgroundColor: 'rgba(255, 255, 255, 0.16)',
+    color: '#fff',
+    borderColor: 'rgba(255, 255, 255, 0.55)',
+    borderWidth: 1,
+    fontWeight: 600,
+  },
+  section: { color: 'rgba(255, 255, 255, 0.85)' },
+};
