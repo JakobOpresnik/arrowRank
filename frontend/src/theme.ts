@@ -1,4 +1,8 @@
-import { createTheme, type MantineColorsTuple } from '@mantine/core';
+import {
+  createTheme,
+  type CSSVariablesResolver,
+  type MantineColorsTuple,
+} from '@mantine/core';
 
 // Cyan-indigo palette — slightly purple-shifted for richness
 const brand: MantineColorsTuple = [
@@ -53,7 +57,9 @@ export const theme = createTheme({
       },
       styles: {
         header: {
+          paddingTop: 12,
           paddingBottom: 0,
+          minHeight: 0,
         },
         title: {
           fontWeight: 600,
@@ -105,14 +111,20 @@ export const theme = createTheme({
   },
 });
 
-// filter selects sit on the brand-8 table header in both schemes — tint it, don't invert it
+// small dimmed labels for the table filter selects above the archer table
 export const FILTER_SELECT_STYLES = {
-  input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.16)',
-    color: '#fff',
-    borderColor: 'rgba(255, 255, 255, 0.55)',
-    borderWidth: 1,
+  label: {
+    fontSize: 11,
     fontWeight: 600,
+    color: 'var(--mantine-color-dimmed)',
+    display: 'block',
+    textAlign: 'left' as const,
   },
-  section: { color: 'rgba(255, 255, 255, 0.85)' },
 };
+
+// off-white light-mode background, easier on the eyes than pure white
+export const cssVariablesResolver: CSSVariablesResolver = () => ({
+  variables: {},
+  light: { '--mantine-color-body': '#f3f4f6' },
+  dark: {},
+});

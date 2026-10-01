@@ -11,18 +11,25 @@ import {
   Group,
   Paper,
   Center,
+  CloseButton,
 } from '@mantine/core';
 import {
   IconEdit,
   IconSearch,
-  IconX,
   IconDots,
   IconSettings,
   IconUsers,
   IconTrash,
   IconUserOff,
 } from '@tabler/icons-react';
-import { useMemo, useState, useCallback, type ChangeEvent } from 'react';
+import {
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+  type ChangeEvent,
+} from 'react';
+import { useHotkeys } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import {
   getScores,
@@ -118,7 +125,13 @@ const ArcherList = ({
   const { t } = useTranslation();
   const { club, category, gender, ageGroup } = selectedFilters;
 
-  const [searchTerm, setSearchTerm] = useState<string>('');
+  const searchRef = useRef<HTMLInputElement>(null);
+  const focusSearch = () => searchRef.current?.focus();
+  useHotkeys([
+    ['/', focusSearch],
+    ['shift+/', focusSearch],
+    ['mod+F', focusSearch],
+  ]);
   const [editingRow, setEditingRow] = useState<number | null>(null);
   const [deletingRow, setDeletingRow] = useState<number | null>(null);
 
@@ -132,6 +145,8 @@ const ArcherList = ({
     setCategoryFilter,
     setGenderFilter,
     setAgeGroupFilter,
+    searchTerm,
+    setSearchTerm,
   } = useFilterStore();
 
   const translations = useMemo(
@@ -229,9 +244,12 @@ const ArcherList = ({
 
   const handleSearchChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-  }, []);
+  }, [setSearchTerm]);
 
-  const clearSearch: () => void = useCallback(() => setSearchTerm(''), []);
+  const clearSearch: () => void = useCallback(
+    () => setSearchTerm(''),
+    [setSearchTerm],
+  );
 
   const formattedProgress: string = new Intl.NumberFormat(i18n.language, {
     minimumFractionDigits: 0,
@@ -261,15 +279,17 @@ const ArcherList = ({
       error={error}
       isTable
     >
-      <Group gap='md' mb='md' align='center'>
+      <Group gap='sm' mb='md' align='flex-end'>
         <TextInput
           placeholder={translations.archersSearch}
+          ref={searchRef}
+          aria-label={translations.archersSearch}
           leftSection={<IconSearch size={16} color='gray' />}
           rightSection={
             searchTerm ? (
-              <IconX
-                size={14}
-                style={{ cursor: 'pointer', opacity: 0.5 }}
+              <CloseButton
+                size='sm'
+                aria-label={t('clearSearch')}
                 onClick={clearSearch}
               />
             ) : undefined
@@ -279,7 +299,30 @@ const ArcherList = ({
           w={250}
           size='sm'
         />
+        <SelectClub
+          competitionId={selectedCompetition}
+          clubs={clubs}
+          selectedClub={club ?? ''}
+          onChange={setClubFilter}
+        />
+        <SelectAgeGroup
+          competitionId={selectedCompetition}
+          selectedAgeGroup={ageGroup ?? ''}
+          onChange={setAgeGroupFilter}
+        />
+        <SelectGender
+          competitionId={selectedCompetition}
+          selectedGender={gender ?? ''}
+          onChange={setGenderFilter}
+        />
+        <SelectCategory
+          competitionId={selectedCompetition}
+          selectedCategory={category ?? ''}
+          onChange={setCategoryFilter}
+        />
+      </Group>
 
+      <Group gap='md' mb='md' align='center'>
         <Tooltip label={translations.progressBarTooltip} position='bottom'>
           <div style={{ flex: 1 }}>
             <div style={{ position: 'relative' }}>
@@ -287,6 +330,7 @@ const ArcherList = ({
                 <Progress.Section
                   value={progress}
                   color={progress >= 100 ? '#4abe4a' : 'brand.4'}
+                  aria-label={translations.progressBarTooltip}
                 />
               </Progress.Root>
               <div
@@ -298,9 +342,9 @@ const ArcherList = ({
                   justifyContent: 'center',
                   fontWeight: 700,
                   fontSize: 14,
-                  color: '#fff',
+                  color: 'light-dark(#1a1a1a, #fff)',
                   textShadow:
-                    '0 0 4px rgba(0,0,0,0.7), 0 0 8px rgba(0,0,0,0.4)',
+                    '0 0 4px light-dark(rgba(255,255,255,0.9), rgba(0,0,0,0.7)), 0 0 8px light-dark(rgba(255,255,255,0.6), rgba(0,0,0,0.4))',
                   pointerEvents: 'none',
                 }}
               >
@@ -336,11 +380,14 @@ const ArcherList = ({
         </Tooltip>
       </Group>
 
-      <Table.ScrollContainer minWidth={1200}>
+      {/* clip (not hidden) so stickyHeader pins to the window */}
+      <Paper withBorder style={{ overflow: 'clip' }}>
         <Table
+          stickyHeader
+          miw={1200}
           striped
           highlightOnHover
-          withTableBorder
+          withTableBorder={false}
           styles={{
             th: {
               backgroundColor: 'var(--mantine-color-brand-8)',
@@ -381,56 +428,27 @@ const ArcherList = ({
                 rowSpan={2}
                 style={{ width: 150, verticalAlign: 'middle' }}
               >
-                <Stack gap={4}>
-                  <span>{translations.tableClub}</span>
-                  <SelectClub
-                    competitionId={selectedCompetition}
-                    clubs={clubs}
-                    selectedClub={club ?? ''}
-                    onChange={setClubFilter}
-                  />
-                </Stack>
+                {translations.tableClub}
               </Table.Th>
               <Table.Th
                 rowSpan={2}
                 style={{ width: 120, verticalAlign: 'middle' }}
               >
-                <Stack gap={4}>
-                  <span style={{ whiteSpace: 'pre-line' }}>
-                    {translations.tableAgeGroup}
-                  </span>
-                  <SelectAgeGroup
-                    competitionId={selectedCompetition}
-                    selectedAgeGroup={ageGroup ?? ''}
-                    onChange={setAgeGroupFilter}
-                  />
-                </Stack>
+                <span style={{ whiteSpace: 'pre-line' }}>
+                  {translations.tableAgeGroup}
+                </span>
               </Table.Th>
               <Table.Th
                 rowSpan={2}
                 style={{ width: 100, verticalAlign: 'middle' }}
               >
-                <Stack gap={4}>
-                  <span>{translations.tableGender}</span>
-                  <SelectGender
-                    competitionId={selectedCompetition}
-                    selectedGender={gender ?? ''}
-                    onChange={setGenderFilter}
-                  />
-                </Stack>
+                {translations.tableGender}
               </Table.Th>
               <Table.Th
                 rowSpan={2}
                 style={{ width: 160, verticalAlign: 'middle' }}
               >
-                <Stack gap={4}>
-                  <span>{translations.tableCategory}</span>
-                  <SelectCategory
-                    competitionId={selectedCompetition}
-                    selectedCategory={category ?? ''}
-                    onChange={setCategoryFilter}
-                  />
-                </Stack>
+                {translations.tableCategory}
               </Table.Th>
               <Table.Th colSpan={12} style={{ verticalAlign: 'middle' }}>
                 {translations.tableScore}
@@ -446,7 +464,11 @@ const ArcherList = ({
                   boxShadow: '-2px 0 4px rgba(0,0,0,0.15)',
                 }}
               >
-                <IconSettings size={18} color='#f0f0f0' />
+                <IconSettings
+                  size={18}
+                  color='#f0f0f0'
+                  aria-label={t('archerActions')}
+                />
               </Table.Th>
             </Table.Tr>
             <Table.Tr>
@@ -537,6 +559,7 @@ const ArcherList = ({
                       <Menu position='bottom-end' withArrow shadow='sm'>
                         <Menu.Target>
                           <ActionIcon
+                            aria-label={`${t('archerActions')}: ${archer.first_name} ${archer.last_name}`}
                             variant={archer.total >= 0 ? 'filled' : 'light'}
                             color='brand'
                             size='md'
@@ -601,7 +624,7 @@ const ArcherList = ({
             )}
           </Table.Tbody>
         </Table>
-      </Table.ScrollContainer>
+      </Paper>
 
       <EditArcher
         open={!!editingRow}

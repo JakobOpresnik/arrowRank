@@ -20,7 +20,7 @@ const SelectClub = ({
   return (
     <Select
       name='club'
-      size='xs'
+      size='sm'
       data={data}
       value={selectedClub}
       onChange={(value) => {
@@ -29,6 +29,8 @@ const SelectClub = ({
           queryKey: ['archersFiltered', competitionId, value],
         });
       }}
+      label={t('tableClub')}
+      w={170}
       styles={FILTER_SELECT_STYLES}
     />
   );
