@@ -1,4 +1,4 @@
-import { Stack, Text, Group, ThemeIcon, Divider, Badge, Code } from '@mantine/core';
+import { Stack, Text, Group, ThemeIcon, Divider, Badge, Code, Kbd } from '@mantine/core';
 import {
   IconTrophy,
   IconUsersGroup,
@@ -7,6 +7,7 @@ import {
   IconDownload,
   IconInfoCircle,
 } from '@tabler/icons-react';
+import { Fragment } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import { ModalWrapper } from './ModalWrapper';
 
@@ -34,6 +35,16 @@ const BOW_CATEGORY_KEYS = [
 ] as const;
 
 const AGE_GROUP_KEYS = ['tableAgeGroupU11', 'tableAgeGroupU16', 'tableAgeGroupAdults'] as const;
+
+const SHORTCUTS = [
+  { keys: ['N'], labelKey: 'addScore' },
+  { keys: ['A'], labelKey: 'addArchers' },
+  { keys: ['E', 'Ctrl + E'], labelKey: 'exportButton' },
+  { keys: ['C'], labelKey: 'shortcutCompetitions' },
+  { keys: ['/', 'Ctrl + F'], labelKey: 'shortcutSearch' },
+  { keys: ['D'], labelKey: 'shortcutTheme' },
+  { keys: ['I', '?'], labelKey: 'shortcutAbout' },
+] as const;
 
 const AboutApp = ({ open, onClose }: AboutAppProps) => {
   const { t } = useTranslation();
@@ -97,6 +108,28 @@ const AboutApp = ({ open, onClose }: AboutAppProps) => {
             <Badge key={key} variant='outline'>{t(key)}</Badge>
           ))}
         </Group>
+
+        <Divider label={t('aboutShortcuts')} labelPosition='left' />
+
+        <Stack gap='xs'>
+          {SHORTCUTS.map(({ keys, labelKey }) => (
+            <Group key={labelKey} gap='sm' wrap='nowrap'>
+              <Group gap={4} w={110} wrap='nowrap'>
+                {keys.map((key, i) => (
+                  <Fragment key={key}>
+                    {i > 0 && (
+                      <Text size='xs' c='dimmed'>
+                        ·
+                      </Text>
+                    )}
+                    <Kbd>{key}</Kbd>
+                  </Fragment>
+                ))}
+              </Group>
+              <Text size='sm'>{t(labelKey)}</Text>
+            </Group>
+          ))}
+        </Stack>
       </Stack>
     </ModalWrapper>
   );

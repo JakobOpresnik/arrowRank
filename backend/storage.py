@@ -15,22 +15,27 @@ def sanitize_string(name: str) -> str:
     return re.sub(r'[^a-zA-Z0-9_\-\.]', '_', name)
 
 
+def remove_logo_file(logo_url: Optional[str]) -> None:
+    # only the file this competition references, so similarly named competitions keep theirs
+    if not logo_url:
+        return
+    path: str = os.path.join(UPLOAD_DIR, os.path.basename(logo_url))
+    if os.path.isfile(path):
+        os.remove(path)
+
+
 def save_uploaded_file(
     file: Optional[UploadFile],
     competition_name: str,
+    old_logo_url: Optional[str] = None,
 ) -> Optional[str]:
     """
-    Saves an uploaded file and removes ALL existing files belonging
-    to the same competition in UPLOAD_DIR.
+    Saves an uploaded file and removes the competition's previous logo file.
 
     Returns None if no file is provided.
     """
     safe_competition_name: str = sanitize_string(competition_name)
-
-    # remove all existing files for this competition
-    for existing_file in os.listdir(UPLOAD_DIR):
-        if existing_file.startswith(safe_competition_name + "_"):
-            os.remove(os.path.join(UPLOAD_DIR, existing_file))
+    remove_logo_file(old_logo_url)
 
     # if no new file, return None (deletes logo)
     if not file:

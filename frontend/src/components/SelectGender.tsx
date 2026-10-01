@@ -23,7 +23,7 @@ const SelectGender = ({
   return (
     <Select
       name='gender'
-      size='xs'
+      size='sm'
       data={data}
       value={selectedGender}
       onChange={(value) => {
@@ -32,6 +32,8 @@ const SelectGender = ({
           queryKey: ['archersFiltered', competitionId, value],
         });
       }}
+      label={t('tableGender')}
+      w={170}
       styles={FILTER_SELECT_STYLES}
     />
   );

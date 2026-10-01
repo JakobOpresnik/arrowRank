@@ -110,7 +110,6 @@ const CreateCompetition = ({
           logoFile: logo ? logoFile : null,
         },
         {
-          onError: (err: Error) => console.error(err),
           onSuccess: (updatedCompetition: Competition) => {
             onUpdated?.(updatedCompetition);
             clearFilters();
@@ -121,7 +120,6 @@ const CreateCompetition = ({
       createCompetition(
         { name, date, location, logoFile },
         {
-          onError: (err: Error) => console.error(err),
           onSuccess: (newCompetition: Competition) => {
             setSelectedCompetition(newCompetition);
             onCreated?.();

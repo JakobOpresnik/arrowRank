@@ -1,3 +1,4 @@
+import i18n from '../i18n';
 import { BE_BASE_URL } from '../constants';
 import {
   ArchersUploadProps,
@@ -20,7 +21,7 @@ export const uploadArchers = async (
     body: formData,
   });
   if (!res.ok) {
-    let message = `Upload failed (HTTP ${res.status})`;
+    let message = i18n.t('errorUploadArchers', { status: res.status });
     try {
       const errorData = await res.json();
       const detail = Array.isArray(errorData.detail)
@@ -38,7 +39,7 @@ export const fetchArcher = async (
   competitionId: number,
   archerId: number | null,
 ): Promise<Archer> => {
-  if (!archerId) throw new Error('No archer ID provided');
+  if (!archerId) throw new Error(i18n.t('errorFetchArcher'));
 
   const res: Response = await fetch(
     `${BE_BASE_URL}/archer/${competitionId}/${archerId}`,
@@ -49,7 +50,7 @@ export const fetchArcher = async (
       },
     },
   );
-  if (!res.ok) throw new Error('Failed to fetch archer');
+  if (!res.ok) throw new Error(i18n.t('errorFetchArcher'));
 
   const data: Archer = await res.json();
   return data;
@@ -65,7 +66,7 @@ export const fetchArchers = async (
       'Content-Type': 'application/json',
     },
   });
-  if (!res.ok) throw new Error('Failed to fetch archers');
+  if (!res.ok) throw new Error(i18n.t('errorFetchArchers'));
 
   const data: Archer[] = await res.json();
   return data;
@@ -95,7 +96,7 @@ export const fetchArchersFiltered = async (
       },
     },
   );
-  if (!res.ok) throw new Error('Failed to fetch filtered archers');
+  if (!res.ok) throw new Error(i18n.t('errorFetchArchers'));
 
   const data: Archer[] = await res.json();
   return data;
@@ -113,7 +114,7 @@ export const updateArcherScore = async (
   });
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.detail || 'Failed to update score');
+    throw new Error(errorData.detail || i18n.t('errorUpdateScore'));
   }
 };
 
@@ -129,7 +130,7 @@ export const clearArcherScore = async (archerId: number): Promise<void> => {
   );
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.message || 'Failed to clear score');
+    throw new Error(errorData.message || i18n.t('errorClearScore'));
   }
 };
 
@@ -147,7 +148,7 @@ export const clearArcherScores = async (
   );
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.message || 'Failed to clear scores');
+    throw new Error(errorData.message || i18n.t('errorClearScores'));
   }
 };
 
@@ -180,7 +181,7 @@ export const createArcher = async (data: ArcherCreate): Promise<void> => {
           )
           .join('; ')
       : errorData.detail;
-    throw new Error(detail || errorData.message || 'Failed to create archer');
+    throw new Error(detail || errorData.message || i18n.t('errorCreateArcher'));
   }
 };
 
@@ -190,7 +191,7 @@ export const deleteArcher = async (archerId: number): Promise<void> => {
   });
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.message || 'Failed to delete archer');
+    throw new Error(errorData.message || i18n.t('errorDeleteArcher'));
   }
 };
 
@@ -201,6 +202,6 @@ export const deleteAllArchers = async (competitionId: number): Promise<void> => 
   );
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.message || 'Failed to delete archers');
+    throw new Error(errorData.message || i18n.t('errorDeleteArchers'));
   }
 };

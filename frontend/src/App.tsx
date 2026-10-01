@@ -1,5 +1,6 @@
 import './App.css';
 import { useEffect, useMemo, useState } from 'react';
+import { useHotkeys } from '@mantine/hooks';
 import CreateCompetition from './components/modals/CreateCompetition';
 import {
   ActionIcon,
@@ -12,6 +13,7 @@ import {
   Text,
   Title,
   Tooltip,
+  UnstyledButton,
   useMantineColorScheme,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
@@ -91,15 +93,7 @@ function App() {
   const [isOpenExit, setIsOpenExit] = useState<boolean>(false);
   const [view, setView] = useState<'scoreboard' | 'competitions'>('scoreboard');
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement).tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-      if (e.key === 'i' || e.key === 'I') setIsOpenAbout((prev) => !prev);
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  const [failedLogoUrl, setFailedLogoUrl] = useState<string | null>(null);
 
   const {
     clubFilter,
@@ -110,6 +104,7 @@ function App() {
     setCategoryFilter,
     setGenderFilter,
     setAgeGroupFilter,
+    setSearchTerm,
   } = useFilterStore();
 
   const { selectedCompetition, setSelectedCompetition } = useCompetitionStore();
@@ -131,6 +126,9 @@ function App() {
     ageGroupFilter ?? '',
     SORTING,
   );
+  // unfiltered list keeps club options and the empty-competition check independent of filters
+  const { data: allArchers, isLoading: isLoadingAllArchers } =
+    useArchersFiltered(selectedCompetition?.id ?? 0, '', '', '', '', SORTING);
   const { mutate: updateScore } = useArchersUpdateScore(
     selectedCompetition?.id ?? 0,
   );
@@ -171,12 +169,95 @@ function App() {
 
   const sortedArchers: Archer[] = useAdvancedArcherSorting(archers ?? []);
 
+  const handleExport = async (): Promise<void> => {
+    const notifId = 'excel-export';
+    notifications.show({
+      id: notifId,
+      title: t('exportButton'),
+      message: t('exportingReport'),
+      color: 'blue',
+      loading: true,
+      autoClose: false,
+      withCloseButton: false,
+    });
+    try {
+      const { cancelled, path: savedPath } = await exportTableToExcel(
+        sortedArchers,
+        selectedCompetition,
+      );
+      if (cancelled) {
+        notifications.update({
+          id: notifId,
+          title: t('exportCancelled'),
+          message: '',
+          color: 'gray',
+          loading: false,
+          autoClose: 3000,
+          withCloseButton: true,
+        });
+        return;
+      }
+      notifications.update({
+        id: notifId,
+        title: t('exportSuccess'),
+        message: savedPath ? (
+          <Button
+            size='xs'
+            mt={6}
+            variant='light'
+            onClick={() => window.electronApi?.openFile(savedPath)}
+          >
+            {t('openFolder')}
+          </Button>
+        ) : (
+          ''
+        ),
+        color: 'teal',
+        loading: false,
+        autoClose: savedPath ? false : 3000,
+        withCloseButton: true,
+      });
+    } catch {
+      notifications.update({
+        id: notifId,
+        title: t('exportError'),
+        message: '',
+        color: 'red',
+        loading: false,
+        autoClose: 3000,
+        withCloseButton: true,
+      });
+    }
+  };
+
+  const hasCompetitions: boolean = !!competitions && competitions.length > 0;
+  const canExport: boolean = archersDataExists || areAnyFiltersApplied;
+
+  // letters also fire with Shift/Caps Lock held
+  const letterHotkey = (
+    key: string,
+    handler: () => void,
+  ): [string, () => void][] => [
+    [key, handler],
+    [`shift+${key}`, handler],
+  ];
+  useHotkeys([
+    ...letterHotkey('n', () => archersDataExists && setIsOpenScoreModal(true)),
+    ...letterHotkey('a', () => hasCompetitions && setIsOpenArchers(true)),
+    ...letterHotkey('e', () => canExport && handleExport()),
+    ['mod+e', () => canExport && handleExport()],
+    ...letterHotkey('c', () =>
+      hasCompetitions &&
+      setView((prev) => (prev === 'competitions' ? 'scoreboard' : 'competitions')),
+    ),
+    ...letterHotkey('d', () => toggleColorScheme()),
+    ...letterHotkey('i', () => setIsOpenAbout((prev) => !prev)),
+    ['shift+?', () => setIsOpenAbout((prev) => !prev)],
+  ]);
+
   const handleSubmit = (update: ArcherUpdate): void => {
     setIsOpenScoreModal(false);
-    updateScore(update, {
-      onError: (err: Error) => console.error(err),
-      onSuccess: () => console.log('Score updated successfully!'),
-    });
+    updateScore(update);
   };
 
   const resetFilters = (): void => {
@@ -184,6 +265,7 @@ function App() {
     setCategoryFilter('');
     setGenderFilter('');
     setAgeGroupFilter('');
+    setSearchTerm('');
     queryClient.invalidateQueries({
       queryKey: [
         'archersFiltered',
@@ -213,10 +295,12 @@ function App() {
     const { logo_url } = selectedCompetition;
     const handleClick = () => setIsOpenAddLogo(true);
 
-    if (!logo_url) {
+    // a missing logo file falls back to the add button instead of broken alt text
+    if (!logo_url || logo_url === failedLogoUrl) {
       return (
         <Tooltip label={t('competitionLogoAddTooltip')} position='top'>
           <ActionIcon
+            aria-label={t('competitionLogoAddTooltip')}
             variant='subtle'
             color='gray'
             size={40}
@@ -229,16 +313,23 @@ function App() {
     }
 
     return (
-      <Image
-        src={`${BE_BASE_URL}${selectedCompetition.logo_url}`}
-        alt={t('competitionLogoHeaderAltText')}
-        h={120}
-        w='auto'
-        style={{ cursor: 'pointer' }}
-        onClick={() => setIsOpenAddLogo(true)}
-      />
+      <UnstyledButton
+        onClick={handleClick}
+        aria-label={t('competitionLogoChange')}
+      >
+        <Image
+          src={`${BE_BASE_URL}${logo_url}`}
+          alt={t('competitionLogoHeaderAltText')}
+          h={120}
+          w='auto'
+          onError={() => setFailedLogoUrl(logo_url)}
+        />
+      </UnstyledButton>
     );
   })();
+
+  const themeTooltip: string =
+    colorScheme === 'dark' ? t('lightModeTooltip') : t('darkModeTooltip');
 
   const shouldDisplayClearFiltersButton: boolean =
     archersDataExists || areAnyFiltersApplied;
@@ -256,6 +347,7 @@ function App() {
         >
           <Image
             src={PtlLogo}
+            draggable={false}
             alt={t('ptlLogoAltText')}
             h={120}
             w='auto'
@@ -284,13 +376,7 @@ function App() {
                   queryClient.invalidateQueries({ queryKey: ['archers'] })
                 }
               />
-              <Button
-                leftSection={<IconTrophy size={18} />}
-                onClick={() => setIsOpenCompetition(true)}
-              >
-                {t('createCompetition')}
-              </Button>
-              {competitions && competitions.length > 0 && (
+              {hasCompetitions && (
                 <Button
                   variant='default'
                   leftSection={<IconTable size={18} />}
@@ -303,7 +389,13 @@ function App() {
                   {t('allCompetitions')}
                 </Button>
               )}
-              {competitions && competitions.length > 0 && (
+              <Button
+                leftSection={<IconTrophy size={18} />}
+                onClick={() => setIsOpenCompetition(true)}
+              >
+                {t('createCompetition')}
+              </Button>
+              {hasCompetitions && (
                 <Button
                   leftSection={<IconListDetails size={18} />}
                   onClick={() => setIsOpenArchers(true)}
@@ -336,59 +428,10 @@ function App() {
                 onClose={() => setIsOpenScoreModal(false)}
               />
             </Group>
-            {(archersDataExists || areAnyFiltersApplied) && (
+            {canExport && (
               <Button
                 leftSection={<IconDownload size={18} />}
-                onClick={async () => {
-                  const notifId = 'excel-export';
-                  notifications.show({
-                    id: notifId,
-                    title: t('exportButton'),
-                    message: t('exportingReport'),
-                    color: 'blue',
-                    loading: true,
-                    autoClose: false,
-                    withCloseButton: false,
-                  });
-                  try {
-                    const savedPath = await exportTableToExcel(
-                      sortedArchers,
-                      selectedCompetition,
-                    );
-                    notifications.update({
-                      id: notifId,
-                      title: t('exportSuccess'),
-                      message: savedPath ? (
-                        <Button
-                          size='xs'
-                          mt={6}
-                          variant='light'
-                          onClick={() =>
-                            window.electronApi?.openFile(savedPath)
-                          }
-                        >
-                          {t('openFolder')}
-                        </Button>
-                      ) : (
-                        ''
-                      ),
-                      color: 'teal',
-                      loading: false,
-                      autoClose: savedPath ? false : 3000,
-                      withCloseButton: true,
-                    });
-                  } catch {
-                    notifications.update({
-                      id: notifId,
-                      title: t('exportError'),
-                      message: '',
-                      color: 'red',
-                      loading: false,
-                      autoClose: 3000,
-                      withCloseButton: true,
-                    });
-                  }
-                }}
+                onClick={handleExport}
               >
                 {t('exportButton')}
               </Button>
@@ -399,11 +442,9 @@ function App() {
           <Group justify='space-between'>
             <Group gap='sm'>
               <SelectLanguage language={language} setLanguage={setLanguage} />
-              <Tooltip
-                label={colorScheme === 'dark' ? 'Light mode' : 'Dark mode'}
-                position='top'
-              >
+              <Tooltip label={themeTooltip} position='top'>
                 <ActionIcon
+                  aria-label={themeTooltip}
                   variant='default'
                   size='lg'
                   onClick={() => toggleColorScheme()}
@@ -417,6 +458,7 @@ function App() {
               </Tooltip>
               <Tooltip label={t('aboutTooltip')} position='top'>
                 <ActionIcon
+                  aria-label={t('aboutTooltip')}
                   variant='default'
                   size='lg'
                   onClick={() => setIsOpenAbout(true)}
@@ -429,6 +471,7 @@ function App() {
               {shouldDisplayClearFiltersButton && (
                 <Tooltip label={t('clearFiltersTooltip')} position='top'>
                   <ActionIcon
+                    aria-label={t('clearFiltersTooltip')}
                     variant='filled'
                     style={{ backgroundColor: '#FCC844', color: '#000' }}
                     size='lg'
@@ -441,6 +484,7 @@ function App() {
               {areAnyScoresPresent && (
                 <Tooltip label={t('clearScoresTooltip')} position='top'>
                   <ActionIcon
+                    aria-label={t('clearScoresTooltip')}
                     variant='filled'
                     style={{ backgroundColor: '#F55656', color: '#fff' }}
                     size='lg'
@@ -453,6 +497,7 @@ function App() {
               {archersDataExists && (
                 <Tooltip label={t('deleteAllArchersTooltip')} position='top'>
                   <ActionIcon
+                    aria-label={t('deleteAllArchersTooltip')}
                     variant='filled'
                     color='red'
                     size='lg'
@@ -465,6 +510,7 @@ function App() {
               {selectedCompetition && (
                 <Tooltip label={t('deleteCompetitionTooltip')} position='top'>
                   <ActionIcon
+                    aria-label={t('deleteCompetitionTooltip')}
                     variant='filled'
                     style={{ backgroundColor: '#7B1010', color: '#fff' }}
                     size='lg'
@@ -479,6 +525,7 @@ function App() {
               )}
               <Tooltip label={t('exitTooltip')} position='top'>
                 <ActionIcon
+                  aria-label={t('exitTooltip')}
                   variant='filled'
                   color='red'
                   size='lg'
@@ -499,8 +546,8 @@ function App() {
             <CompetitionList onBack={() => setView('scoreboard')} />
           ) : selectedCompetition ? (
             <ArcherList
-              allArchers={sortedArchers}
-              isLoadingArchers={isLoadingArchers}
+              allArchers={allArchers}
+              isLoadingArchers={isLoadingAllArchers}
               selectedCompetition={selectedCompetition.id}
               selectedFilters={{
                 club: clubFilter,
@@ -550,13 +597,14 @@ function App() {
         }}
       >
         <Text size='sm' fw={500} c='dimmed'>
-          made by Jakob Oprešnik
+          {t('madeBy', { name: 'Jakob Oprešnik' })}
         </Text>
         <Text size='sm' c='dimmed'>
           ·
         </Text>
         <Tooltip label='jakob.opresnik@gmail.com' position='top'>
           <ActionIcon
+            aria-label={`${t('email')}: jakob.opresnik@gmail.com`}
             component='a'
             href='mailto:jakob.opresnik@gmail.com'
             variant='subtle'
@@ -568,6 +616,7 @@ function App() {
         </Tooltip>
         <Tooltip label='LinkedIn' position='top'>
           <ActionIcon
+            aria-label='LinkedIn'
             variant='subtle'
             color='gray'
             size='sm'
@@ -584,8 +633,9 @@ function App() {
             <IconBrandLinkedin size={16} />
           </ActionIcon>
         </Tooltip>
-        <Tooltip label='Portfolio' position='top'>
+        <Tooltip label={t('portfolioTooltip')} position='top'>
           <ActionIcon
+            aria-label={t('portfolioTooltip')}
             variant='subtle'
             color='gray'
             size='sm'

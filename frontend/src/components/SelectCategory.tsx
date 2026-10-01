@@ -25,7 +25,7 @@ const SelectCategory = ({
   return (
     <Select
       name='category'
-      size='xs'
+      size='sm'
       data={data}
       value={selectedCategory}
       onChange={(value) => {
@@ -40,6 +40,8 @@ const SelectCategory = ({
           ],
         });
       }}
+      label={t('tableCategory')}
+      w={170}
       styles={FILTER_SELECT_STYLES}
     />
   );

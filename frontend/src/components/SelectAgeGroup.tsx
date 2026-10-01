@@ -2,8 +2,8 @@ import { Select } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { AGE_GROUPS } from '../constants';
 import { SelectAgeGroupProps } from '../types';
-import { queryClient } from '../lib/queryClient';
 import { FILTER_SELECT_STYLES } from '../theme';
+import { queryClient } from '../lib/queryClient';
 
 const SelectAgeGroup = ({
   competitionId,
@@ -28,7 +28,7 @@ const SelectAgeGroup = ({
   return (
     <Select
       name='age-group'
-      size='xs'
+      size='sm'
       data={data}
       value={selectedAgeGroup}
       onChange={(value) => {
@@ -37,6 +37,8 @@ const SelectAgeGroup = ({
           queryKey: ['archersFiltered', competitionId, value],
         });
       }}
+      label={t('tableAgeGroup')}
+      w={170}
       styles={FILTER_SELECT_STYLES}
     />
   );

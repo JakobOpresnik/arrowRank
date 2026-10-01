@@ -4,9 +4,7 @@ import sys
 import traceback
 import uvicorn
 
-# Force UTF-8 on stdout/stderr so print() doesn't crash on Slovenian/Croatian
-# characters (č, š, ž, …) when running as a PyInstaller exe on Windows,
-# where the default codepage is cp1252.
+# force UTF-8 so print() doesn't crash on č/š/ž under the cp1252 codepage
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8', errors='replace') # type: ignore
 if hasattr(sys.stderr, 'reconfigure'):
@@ -16,14 +14,14 @@ from fastapi import FastAPI, HTTPException, Depends, Query, UploadFile, File, Fo
 from fastapi.responses import FileResponse
 from sqlalchemy import desc, asc, func, text
 from sqlalchemy.orm import Session
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Sequence
 
 from models import AgeGroup, Category, Gender, Base, Archer, Competition
 from schemas import ArcherCreate, ArcherOut, ArcherScoreUpdate, CompetitionOut
 from constants import DATABASE_URL, UPLOAD_DIR
 from database import SessionLocal, engine
 from middleware import setup_cors
-from storage import save_uploaded_file, setup_storage
+from storage import remove_logo_file, save_uploaded_file, setup_storage
 from parse import parse_category
 
 # DATABASE_URL = "sqlite:///./database.db"
@@ -66,13 +64,9 @@ def get_db():
         db.close()
 
 
-# ----------------------------
 # API endpoints
-# ----------------------------
 
-# ----------------------------
 # Populate DB on startup
-# ----------------------------
 def migrate_age_groups() -> None:
     """Migrate archers table if it still has old U10/U15 age group CHECK constraint."""
     with engine.connect() as conn:
@@ -172,9 +166,7 @@ def health():
     return {"status": "ok"}
 
 
-# ----------------------------
 # ARCHERS
-# ----------------------------
 @app.post("/archers/upload")
 def upload_data_into_db(
     file: UploadFile = File(...),
@@ -201,9 +193,7 @@ def upload_data_into_db(
             except (UnicodeDecodeError, ValueError):
                 continue
 
-        # fix double-encoded UTF-8: data was UTF-8 but got misread as cp1250
-        # then re-saved as UTF-8, producing garbled chars (e.g. Š→Ĺ , č→ÄŤ)
-        # reverse line-by-line so one bad char doesn't block the entire fix
+        # undo UTF-8 misread as cp1250 (Š→Ĺ , č→ÄŤ), line by line so one bad char doesn't block the rest
         if not any(c in content_str for c in 'čšžČŠŽ'):
             fixed_lines = []
             for line in content_str.splitlines():
@@ -215,7 +205,7 @@ def upload_data_into_db(
             if any(c in candidate for c in 'čšžČŠŽ'):
                 content_str = candidate
 
-        content: List[str] = content_str.splitlines()
+        content: Sequence[str] = content_str.splitlines() 
         delimiter = ';' if content and ';' in content[0] else ','
         reader: DictReader[str] = DictReader(content, delimiter=delimiter)
 
@@ -224,7 +214,12 @@ def upload_data_into_db(
         for row in reader:
             row_lower = {k.lower().strip(): v for k, v in row.items() if k}
             email: str = row_lower.get("email", "")
-            club: str = (row_lower.get("slovenski klub") or row_lower.get("foreign club name/ime tujega kluba") or row_lower.get("klub") or "").strip()
+            club_type = (row_lower.get("klub/club") or "").strip().lower()
+            club: str = ""
+            if club_type == "slovenski klub":
+                club = (row_lower.get("slovenski klub") or "").strip()
+            elif club_type == "foreign club":
+                club = (row_lower.get("foreign club") or row_lower.get("foreign club name/ime tujega kluba") or "").strip()
 
             full_name: str = row_lower.get("ime in priimek", "")
             if " " in full_name:
@@ -455,7 +450,7 @@ def get_archers_filtered(
     except ValueError:
         raise HTTPException(status_code=400, detail="competition_id must be an integer")
     
-    query: SAQuery[Archer] = db.query(Archer).filter(Archer.competition_id == comp_id) # type: ignore
+    query = db.query(Archer).filter(Archer.competition_id == comp_id)
 
     # apply optional filters
     if club is not None:
@@ -530,56 +525,7 @@ def create_archer(
     return new_archer
 
 
-# ----------------------------
-# LEADERBOARDS
-# ----------------------------
-@app.get("/leaderboards/category", response_model=Dict[str, List[ArcherOut]])
-def get_category_leaderboards(db: Session = Depends(get_db)) -> Dict[str, List[ArcherOut]]:
-    leaderboard = {}
-    for category in Category:
-        archers_in_category = (
-            db.query(Archer)
-            .filter(Archer.category == category, Archer.score != None)
-            .order_by(desc(Archer.score))
-            .all()
-        )
-
-        if not archers_in_category:
-            raise HTTPException(
-                status_code=400, 
-                detail=f"No archers with scores found in category '{category.value}'"
-            )
-
-        leaderboard[category.value] = archers_in_category
-    
-    return leaderboard
-
-
-@app.get("/leaderboards/age_group", response_model=Dict[str, List[ArcherOut]])
-def get_age_group_leaderboards(db: Session = Depends(get_db)) -> Dict[str, List[ArcherOut]]:
-    leaderboard = {}
-    for age_group in AgeGroup:
-        archers_in_age_group = (
-            db.query(Archer)
-            .filter(Archer.age_group == age_group, Archer.score != None)
-            .order_by(desc(Archer.score))
-            .all()
-        )
-
-        if not archers_in_age_group:
-            raise HTTPException(
-                status_code=400, 
-                detail=f"No archers with scores found in age group '{age_group.value}'"
-            )
-
-        leaderboard[age_group.value] = archers_in_age_group
-    
-    return leaderboard
-
-
-# ----------------------------
 # COMPETITIONS
-# ----------------------------
 @app.post("/competitions", response_model=CompetitionOut)
 def create_competition(
     name: str = Form(...),
@@ -621,6 +567,7 @@ def delete_competition(competition_id: int, db: Session = Depends(get_db)):
     if not competition:
         raise HTTPException(status_code=404, detail="Competition not found")
     db.query(Archer).filter(Archer.competition_id == competition_id).delete()
+    remove_logo_file(competition.logo_url)  # type: ignore
     db.delete(competition)
     db.commit()
     return competition
@@ -646,7 +593,7 @@ def upload_competition_logo(
     if not competition:
         raise HTTPException(status_code=404, detail="Competition not found")
     
-    competition.logo_url = save_uploaded_file(logo, competition.name)  # type: ignore
+    competition.logo_url = save_uploaded_file(logo, competition.name, competition.logo_url)  # type: ignore
 
     db.commit()
     db.refresh(competition)
@@ -656,5 +603,9 @@ def upload_competition_logo(
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
+    if os.environ.get("EXIT_ON_STDIN_EOF"):
+        import threading
+        # Electron holds our stdin pipe; EOF means it died, so don't linger as an orphan
+        threading.Thread(target=lambda: (sys.stdin.read(), os._exit(0)), daemon=True).start()
     # run uvicorn programmatically (good for freezing)
     uvicorn.run(app, host="127.0.0.1", port=port, log_level="info")

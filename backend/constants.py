@@ -15,7 +15,7 @@ CSV_DATA_FILE_PATH: str = os.getenv("CSV_FILE", "data/mock_data.csv")
 # UPLOAD_DIR: str = os.path.join(BASE_DIR, "uploaded_logos")
 
 # UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", "uploaded_logos")
-UPLOAD_DIR = "uploaded_logos"
+UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", "uploaded_logos")
 
 # IS_PACKAGED = getattr(sys, "_MEIPASS", False)  # optional if using PyInstaller or exe
 

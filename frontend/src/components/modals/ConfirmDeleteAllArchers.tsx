@@ -56,8 +56,9 @@ const ConfirmDeleteAllArchers = ({ open, archerCount, competitionName, onClose, 
         <Text>{t('deleteAllArchersDialogContent1', { count: archerCount })}</Text>
         <Text mt='xs'>{t('deleteAllArchersDialogContent2')}</Text>
         <Divider my='md' />
-        <Text size='sm' mb={4}>{t('deleteAllArchersConfirmLabel')} <Code>{competitionName}</Code></Text>
+        <Text size='sm' mb='xs'>{t('deleteAllArchersConfirmLabel')} <Code>{competitionName}</Code></Text>
         <TextInput
+          aria-label={t('deleteAllArchersConfirmLabel')}
           value={value}
           onChange={(e) => setValue(e.currentTarget.value)}
           onPaste={(e) => e.preventDefault()}

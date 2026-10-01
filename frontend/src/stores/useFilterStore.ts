@@ -6,10 +6,12 @@ export interface FilterStore {
   categoryFilter: string | null;
   genderFilter: string | null;
   ageGroupFilter: string | null;
+  searchTerm: string;
   setClubFilter: (club: string | null) => void;
   setCategoryFilter: (category: string | null) => void;
   setGenderFilter: (gender: string | null) => void;
   setAgeGroupFilter: (ageGroup: string | null) => void;
+  setSearchTerm: (searchTerm: string) => void;
   clearFilters: () => void;
 }
 
@@ -20,6 +22,7 @@ export const useFilterStore = create<FilterStore>()(
       categoryFilter: null,
       genderFilter: null,
       ageGroupFilter: null,
+      searchTerm: '',
       setClubFilter: (club: string | null) =>
         set((state) => ({ ...state, clubFilter: club })),
       setCategoryFilter: (category: string | null) =>
@@ -28,6 +31,7 @@ export const useFilterStore = create<FilterStore>()(
         set((state) => ({ ...state, genderFilter: gender })),
       setAgeGroupFilter: (ageGroup: string | null) =>
         set((state) => ({ ...state, ageGroupFilter: ageGroup })),
+      setSearchTerm: (searchTerm: string) => set({ searchTerm }),
       clearFilters: () =>
         set(() => ({
           categoryFilter: null,
@@ -37,6 +41,7 @@ export const useFilterStore = create<FilterStore>()(
     }),
     {
       name: 'filter-store', // name of the item in storage
+      partialize: ({ searchTerm: _searchTerm, ...rest }) => rest,
     }
   )
 );

@@ -4,7 +4,7 @@ import ptlLogoUrl from '../assets/ptl_logo.png';
 import { computeArcherRanks } from '../components/ArcherList';
 import { Archer, ArcherExtended, Competition, scoreKeys } from '../types';
 import { BE_BASE_URL } from '../constants';
-import sl from '../locales/sl/translations.json';
+import i18n from '../i18n';
 
 declare global {
   interface Window {
@@ -12,7 +12,11 @@ declare global {
       isElectron: boolean;
       platform: string;
       env: string;
-      saveExcelFile: (buffer: Uint8Array, filename: string) => Promise<string>;
+      saveExcelFile: (
+        buffer: Uint8Array,
+        filename: string,
+        labels: { title: string; filterName: string },
+      ) => Promise<string | null>;
       openFileLocation: (filePath: string) => Promise<void>;
       openFile: (filePath: string) => Promise<void>;
       openExternalUrl: (url: string) => Promise<void>;
@@ -58,23 +62,31 @@ const mediumLine: Partial<ExcelJS.Border> = {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const SL: Record<string, string> = {
-  barebow: sl.tableCategoryBarebow,
-  'long bow': sl.tableCategoryLongbow,
-  'traditional bow': sl.tableCategoryTraditionalbow,
-  'primitive bow': sl.tableCategoryPrimitivebow,
-  guest: sl.tableCategoryGuest,
-  male: sl.tableGenderMale,
-  female: sl.tableGenderFemale,
-  mixed: sl.tableGenderMixed,
-  adults: '',
-  u11: sl.tableAgeGroupU11,
-  u16: sl.tableAgeGroupU16,
+const LABEL_KEYS: Record<string, string> = {
+  barebow: 'tableCategoryBarebow',
+  'long bow': 'tableCategoryLongbow',
+  'traditional bow': 'tableCategoryTraditionalbow',
+  'primitive bow': 'tableCategoryPrimitivebow',
+  guest: 'tableCategoryGuest',
+  male: 'tableGenderMale',
+  female: 'tableGenderFemale',
+  mixed: 'tableGenderMixed',
+  u11: 'tableAgeGroupU11',
+  u16: 'tableAgeGroupU16',
 };
 
 function getCategoryLabel(archer: Archer): string {
-  const translate = (s: string) => SL[s.toLowerCase()] ?? s;
-  return [archer.age_group, archer.gender, archer.category]
+  const translate = (s: string) => {
+    const key = s.toLowerCase();
+    if (key === 'adults') return '';
+    return LABEL_KEYS[key] ? i18n.t(LABEL_KEYS[key]) : s;
+  };
+  // Italian puts the bow type first ("arco nudo U16 femminile")
+  const parts =
+    i18n.language === 'it'
+      ? [archer.category, archer.age_group, archer.gender]
+      : [archer.age_group, archer.gender, archer.category];
+  return parts
     .map(translate)
     .filter(Boolean)
     .join(' ')
@@ -187,14 +199,17 @@ function sortForGroupOrder(archers: Archer[]): Archer[] {
 
 // ── Main export function ──────────────────────────────────────────────────────
 
+// path is null in the browser build, where saveAs handles the download
+type ExportResult = { cancelled: boolean; path: string | null };
+
 const exportTableToExcel = async (
   archers: Archer[],
   competition?: Competition | null,
-): Promise<string | null> => {
-  if (!archers || archers.length === 0) return null;
+): Promise<ExportResult> => {
+  if (!archers || archers.length === 0) return { cancelled: false, path: null };
 
   const wb = new ExcelJS.Workbook();
-  const ws = wb.addWorksheet('Rezultati');
+  const ws = wb.addWorksheet(i18n.t('excelSheetName'));
 
   // ── A4 portrait page setup (columns fit width, rows break across pages)
   ws.pageSetup = {
@@ -233,7 +248,7 @@ const exportTableToExcel = async (
 
   if (competition) {
     const titleCell = ws.getCell(r, HDR_TEXT_START);
-    titleCell.value = 'Pokal tradicionalnih lokov';
+    titleCell.value = i18n.t('excelTitle');
     titleCell.font = {
       name: 'Calibri',
       size: 13,
@@ -303,7 +318,7 @@ const exportTableToExcel = async (
 
   // ── REZULTATI title ────────────────────────────────────────────────────────
   const rezCell = ws.getCell(r, 1);
-  rezCell.value = 'REZULTATI';
+  rezCell.value = i18n.t('excelResultsHeading');
   rezCell.font = {
     name: 'Calibri',
     size: 22,
@@ -334,10 +349,10 @@ const exportTableToExcel = async (
   // ── Category groups ────────────────────────────────────────────────────────
   const groups = groupByCategory(sortForGroupOrder(archers));
   const colHeaders: (string | number)[] = [
-    'Št.',
-    'Ime in priimek',
-    'Klub',
-    'Rezultat',
+    i18n.t('excelColRank'),
+    i18n.t('excelColName'),
+    i18n.t('club'),
+    i18n.t('score'),
     ...scoreKeys,
   ];
 
@@ -437,23 +452,28 @@ const exportTableToExcel = async (
 
   // ── Save ───────────────────────────────────────────────────────────────────
   const buf = await wb.xlsx.writeBuffer();
+  const suffix = i18n.t('excelFileSuffix');
   const filename = competition
-    ? `${competition.name}_${competition.date.slice(0, 10)}_rezultati.xlsx`
-    : 'rezultati.xlsx';
+    ? `${competition.name}_${competition.date.slice(0, 10)}_${suffix}.xlsx`
+    : `${suffix}.xlsx`;
 
   if (window.electronApi?.saveExcelFile) {
     const savedPath = await window.electronApi.saveExcelFile(
       new Uint8Array(buf as ArrayBuffer),
       filename,
+      {
+        title: i18n.t('saveReportDialogTitle'),
+        filterName: i18n.t('excelFilesFilter'),
+      },
     );
-    return savedPath;
+    return { cancelled: savedPath === null, path: savedPath };
   }
 
   const blob = new Blob([buf as ArrayBuffer], {
     type: 'application/octet-stream',
   });
   saveAs(blob, filename);
-  return null;
+  return { cancelled: false, path: null };
 };
 
 export { exportTableToExcel };
