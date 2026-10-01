@@ -16,7 +16,7 @@ import { SUPPORTED_LANGUAGES } from './constants.ts';
 import type { Language } from './types.ts';
 import { useLanguageStore } from './stores/useLanguageStore.ts';
 import TranslationsLoader from './components/TranslationsLoader.tsx';
-import { theme } from './theme.ts';
+import { cssVariablesResolver, theme } from './theme.ts';
 
 async function main() {
   const { language } = useLanguageStore.getState();
@@ -39,7 +39,11 @@ async function main() {
 
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
-      <MantineProvider theme={theme} defaultColorScheme="light">
+      <MantineProvider
+        theme={theme}
+        defaultColorScheme="light"
+        cssVariablesResolver={cssVariablesResolver}
+      >
         <Notifications position="bottom-right" />
         <QueryClientProvider client={queryClient}>
           <I18nextProvider i18n={i18n}>
