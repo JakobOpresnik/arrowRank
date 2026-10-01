@@ -1,7 +1,7 @@
 const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
-const { spawn } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
 const axios = require('axios');
 const url = require('url');
 
@@ -23,10 +23,35 @@ async function waitForBackend(url, timeout = 10000) {
 }
 
 function stopBackend() {
-  if (backendProcess) {
+  if (!backendProcess) return;
+  // PyInstaller onefile runs the server as a child process, so kill the whole tree
+  if (process.platform === 'win32') {
+    spawnSync('taskkill', ['/pid', String(backendProcess.pid), '/T', '/F']);
+  } else {
     backendProcess.kill();
-    backendProcess = null;
   }
+  backendProcess = null;
+}
+
+// keeps the database and logos outside the install folder so reinstalls don't wipe them
+function prepareDataDir() {
+  const dataDir = app.getPath('userData');
+  const logosDir = path.join(dataDir, 'uploaded_logos');
+  fs.mkdirSync(logosDir, { recursive: true });
+  const legacyDir = path.join(process.resourcesPath, 'backend');
+  const dbPath = path.join(dataDir, 'default.db');
+  const legacyDb = path.join(legacyDir, 'default.db');
+  if (!fs.existsSync(dbPath) && fs.existsSync(legacyDb)) {
+    fs.copyFileSync(legacyDb, dbPath);
+    const legacyLogos = path.join(legacyDir, 'uploaded_logos');
+    if (fs.existsSync(legacyLogos)) {
+      fs.cpSync(legacyLogos, logosDir, { recursive: true });
+    }
+  }
+  return {
+    DATABASE_URL: `sqlite:///${dbPath.replace(/\\/g, '/')}`,
+    UPLOAD_DIR: logosDir,
+  };
 }
 
 function createWindow() {
@@ -58,15 +83,15 @@ function createWindow() {
   win.on('closed', stopBackend);
 }
 
-ipcMain.handle('save-excel-file', async (_event, buffer, filename) => {
+ipcMain.handle('save-excel-file', async (_event, buffer, filename, labels) => {
   const defaultDir = path.join(app.getPath('documents'), 'ArrowRank');
   if (!fs.existsSync(defaultDir)) {
     fs.mkdirSync(defaultDir, { recursive: true });
   }
   const { filePath, canceled } = await dialog.showSaveDialog({
-    title: 'Save Report',
+    title: labels?.title ?? 'Save report',
     defaultPath: path.join(defaultDir, filename),
-    filters: [{ name: 'Excel Files', extensions: ['xlsx'] }],
+    filters: [{ name: labels?.filterName ?? 'Excel files', extensions: ['xlsx'] }],
   });
   if (canceled || !filePath) return null;
   fs.writeFileSync(filePath, Buffer.from(buffer));
@@ -99,12 +124,13 @@ app.whenReady().then(async () => {
 
   // spawn backend and log errors
   backendProcess = spawn(backendPath, [], {
-    stdio: ['ignore', 'pipe', 'pipe'], // capture stdout/stderr
+    stdio: ['pipe', 'pipe', 'pipe'], // stdin pipe lets the backend exit when Electron dies
     cwd: path.dirname(backendPath),
-    /* env: {
+    env: {
       ...process.env,
-      UPLOAD_DIR: path.join(app.getPath('userData'), 'logos'),
-    }, */
+      EXIT_ON_STDIN_EOF: '1',
+      ...(app.isPackaged ? prepareDataDir() : {}),
+    },
   });
 
   backendProcess.stdout.on('data', (data) =>
@@ -126,6 +152,8 @@ app.whenReady().then(async () => {
     app.quit();
   }
 });
+
+app.on('will-quit', stopBackend);
 
 app.on('window-all-closed', () => {
   stopBackend();
