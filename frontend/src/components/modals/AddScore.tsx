@@ -115,16 +115,18 @@ const AddScore = ({
   // Build archer select data - disable those who already have scores
   const archerData = useMemo(() => {
     if (!archers) return [];
-    return archers.map((archer: Archer) => {
-      const hasScores = scoreKeys.some(
-        (key) => archer[`score${key}` as ScoreKey] !== null
-      );
-      return {
-        value: String(archer.id),
-        label: `${archer.first_name} ${archer.last_name} (${archer.club})`,
-        disabled: hasScores,
-      };
-    });
+    return archers
+      .map((archer: Archer) => {
+        const hasScores = scoreKeys.some(
+          (key) => archer[`score${key}` as ScoreKey] !== null
+        );
+        return {
+          value: String(archer.id),
+          label: `${archer.first_name} ${archer.last_name} (${archer.club})`,
+          disabled: hasScores,
+        };
+      })
+      .sort((a, b) => Number(a.disabled) - Number(b.disabled));
   }, [archers]);
 
   const competitionData =
@@ -208,21 +210,21 @@ const AddScore = ({
                 placeholder={`${t('score')} 20`}
                 value={scores.score20 ?? ''}
                 onChange={(val) =>
-                  setScores({ ...scores, score20: Number(val) })
+                  setScores({ ...scores, score20: val === '' ? undefined : Number(val) })
                 }
               />
               <ScoreInput
                 placeholder={`${t('score')} 18`}
                 value={scores.score18 ?? ''}
                 onChange={(val) =>
-                  setScores({ ...scores, score18: Number(val) })
+                  setScores({ ...scores, score18: val === '' ? undefined : Number(val) })
                 }
               />
               <ScoreInput
                 placeholder={`${t('score')} 16`}
                 value={scores.score16 ?? ''}
                 onChange={(val) =>
-                  setScores({ ...scores, score16: Number(val) })
+                  setScores({ ...scores, score16: val === '' ? undefined : Number(val) })
                 }
               />
             </Group>
@@ -231,21 +233,21 @@ const AddScore = ({
                 placeholder={`${t('score')} 14`}
                 value={scores.score14 ?? ''}
                 onChange={(val) =>
-                  setScores({ ...scores, score14: Number(val) })
+                  setScores({ ...scores, score14: val === '' ? undefined : Number(val) })
                 }
               />
               <ScoreInput
                 placeholder={`${t('score')} 12`}
                 value={scores.score12 ?? ''}
                 onChange={(val) =>
-                  setScores({ ...scores, score12: Number(val) })
+                  setScores({ ...scores, score12: val === '' ? undefined : Number(val) })
                 }
               />
               <ScoreInput
                 placeholder={`${t('score')} 10`}
                 value={scores.score10 ?? ''}
                 onChange={(val) =>
-                  setScores({ ...scores, score10: Number(val) })
+                  setScores({ ...scores, score10: val === '' ? undefined : Number(val) })
                 }
               />
             </Group>
@@ -254,21 +256,21 @@ const AddScore = ({
                 placeholder={`${t('score')} 8`}
                 value={scores.score8 ?? ''}
                 onChange={(val) =>
-                  setScores({ ...scores, score8: Number(val) })
+                  setScores({ ...scores, score8: val === '' ? undefined : Number(val) })
                 }
               />
               <ScoreInput
                 placeholder={`${t('score')} 6`}
                 value={scores.score6 ?? ''}
                 onChange={(val) =>
-                  setScores({ ...scores, score6: Number(val) })
+                  setScores({ ...scores, score6: val === '' ? undefined : Number(val) })
                 }
               />
               <ScoreInput
                 placeholder={`${t('score')} 4`}
                 value={scores.score4 ?? ''}
                 onChange={(val) =>
-                  setScores({ ...scores, score4: Number(val) })
+                  setScores({ ...scores, score4: val === '' ? undefined : Number(val) })
                 }
               />
             </Group>
@@ -277,7 +279,7 @@ const AddScore = ({
                 placeholder={`${t('score')} 0`}
                 value={scores.score0 ?? ''}
                 onChange={(val) =>
-                  setScores({ ...scores, score0: Number(val) })
+                  setScores({ ...scores, score0: val === '' ? undefined : Number(val) })
                 }
               />
             </Stack>
