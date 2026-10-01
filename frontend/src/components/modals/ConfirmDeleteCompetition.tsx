@@ -56,10 +56,11 @@ const ConfirmDeleteCompetition = ({ open, competitionName, onClose, onDelete }: 
         <Text>{t('deleteCompetitionDialogContent1')}</Text>
         <Text mt='xs'>{t('deleteCompetitionDialogContent2')}</Text>
         <Divider my='md' />
-        <Text size='sm' mb={4}>
+        <Text size='sm' mb='xs'>
           {t('deleteCompetitionConfirmLabel')} <Code>{competitionName}</Code>
         </Text>
         <TextInput
+          aria-label={t('deleteCompetitionConfirmLabel')}
           value={value}
           onChange={(e) => setValue(e.currentTarget.value)}
           onPaste={(e) => e.preventDefault()}

@@ -9,6 +9,7 @@ interface ScoreInputProps extends NumberInputProps {
 
 const ScoreInput = ({ scoreKey: _scoreKey, ...props }: ScoreInputProps) => (
   <NumberInput
+    aria-label={typeof props.placeholder === 'string' ? props.placeholder : undefined}
     {...props}
     w={INPUT_WIDTH}
     min={props.min ?? 0}
