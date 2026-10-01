@@ -1,3 +1,4 @@
+import i18n from '../i18n';
 import { BE_BASE_URL } from '../constants';
 import {
   Competition,
@@ -14,7 +15,7 @@ export const fetchCompetitions = async (): Promise<Competition[]> => {
   });
 
   if (!res.ok) {
-    throw new Error('Failed to fetch competitions');
+    throw new Error(i18n.t('errorFetchCompetitions'));
   }
 
   const data: Competition[] = await res.json();
@@ -25,7 +26,7 @@ export const createCompetition = async (
   data: CompetitionCreate
 ): Promise<Competition> => {
   if (!data.name || !data.date || !data.location)
-    throw new Error('Missing required fields');
+    throw new Error(i18n.t('errorMissingFields'));
   const formData = new FormData();
   formData.append('name', data.name);
   formData.append('date', data.date);
@@ -41,7 +42,7 @@ export const createCompetition = async (
   });
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.message || 'Competition creation failed');
+    throw new Error(errorData.message || i18n.t('errorCreateCompetition'));
   }
   return res.json() as Promise<Competition>;
 };
@@ -52,7 +53,7 @@ export const deleteCompetition = async (competitionId: number): Promise<void> =>
   });
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.message || 'Failed to delete competition');
+    throw new Error(errorData.message || i18n.t('errorDeleteCompetition'));
   }
 };
 
@@ -79,7 +80,7 @@ export const uploadCompetitionLogo = async (
   );
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.message || 'Logo upload failed');
+    throw new Error(errorData.message || i18n.t('errorLogoUpload'));
   }
 
   return res.json() as Promise<Competition>;

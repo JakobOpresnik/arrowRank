@@ -103,10 +103,6 @@ const AddArchers = ({ open, onClose, selectedCompetitionId }: AddArchersProps) =
           ageGroup === 'Adults' ? ageGroup.toLowerCase() : ageGroup ?? '',
       },
       {
-        onError: (err: Error) => {
-          console.error(err);
-          alert(`Error: ${err.message}`);
-        },
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ['archersFiltered'] });
           setFirstName(null);
